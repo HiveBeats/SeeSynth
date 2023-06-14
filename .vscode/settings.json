@@ -1,0 +1,5 @@
+{
+    "cpplint.filters": [
+        "readability/casting"
+    ]
+}
