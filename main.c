@@ -86,7 +86,7 @@ static Sound get_init_samples(float duration) {
     float* samples = malloc(sizeof(float) * sample_count);
 
     for (double i = 0.0; i < duration * SAMPLE_RATE; i++) {
-        samples[(int)i] = i / SAMPLE_RATE;
+        samples[(int)i] = i;
     }
 
     Sound res = {
@@ -196,7 +196,6 @@ static Sound freq(float duration, OscillatorParameterList osc) {
     float* output = malloc(sizeof(float) * samples.sample_count);
     for (int i = 0; i < samples.sample_count; i++) {
         float sample = samples.samples[i];
-        // todo: 
         OscillatorGenerationParameter param = {
             .oscillators = osc,
             .sample = sample
@@ -392,7 +391,6 @@ int main(int argc, char **argv) {
     uint16_t* song_pcm = malloc(sizeof(uint16_t) * song.sample_count);
     for (size_t i = 0; i < song.sample_count; i++) {
         song_pcm[i] = toInt16Sample(song.samples[i]);
-        // printf("Sample: %d\n", song_pcm[i]);
     }
 
     pack(song_pcm, song.sample_count);

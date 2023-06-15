@@ -1,5 +1,8 @@
 {
     "cpplint.filters": [
         "readability/casting"
-    ]
+    ],
+    "files.associations": {
+        "algorithm": "c"
+    }
 }
