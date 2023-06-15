@@ -13,112 +13,45 @@
 
 #define PI 3.1415926535f
 
+//------------------------------------------------------------------------------------
+// General Sound
+//------------------------------------------------------------------------------------
+
 typedef struct Sound {
     float* samples;
     size_t sample_count;
 } Sound;
 
-/*
-static void reverse_array(float arr[], size_t start, size_t end)
-{
-    float temp;
-    while (start < end)
-    {
-        temp = arr[start];   
-        arr[start] = arr[end];
-        arr[end] = temp;
-        start++;
-        end--;
+// frees the original sounds
+Sound concat_sounds(Sound* sounds, size_t count) {
+    size_t total_count = 0;
+    for (size_t i = 0; i < count; i++) {
+        total_count += sounds[i].sample_count;
     }
-}
-*/
+    // array to hold the result
+    float* total = malloc(total_count * sizeof(float));
 
-static size_t get_semitone_shift_internal(char* root_note, char* target_note) {
-    char* pitch_classes[12] =
-        { "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B" };
+    size_t current_count = 0;
+    for (size_t i = 0; i < count; i++) {
+        memcpy(total + current_count,
+            sounds[i].samples,
+            sounds[i].sample_count * sizeof(float));
+        current_count += sounds[i].sample_count;
 
-    // Extract the note number and pitch class for the root note
-    int root_note_num = (int)root_note[strlen(root_note) - 1] - '0';
-
-    char* root_pitch_class_str = malloc((strlen(root_note) - 1) * sizeof(char));
-    strncpy(root_pitch_class_str, root_note, strlen(root_note) - 1);
-
-    int root_pitch_class = -1;
-
-    for (int i = 0; i < 12; i++) {
-        if (strcmp(pitch_classes[i], root_pitch_class_str) == 0) {
-            root_pitch_class = i;
-            break;
-        }
+        free(sounds[i].samples);
     }
 
-    free(root_pitch_class_str);
-
-    // Extract the note number and pitch class for the target note
-    int target_note_num = (int)target_note[strlen(target_note) - 1] - '0';
-
-    char* target_pitch_class_str =
-        malloc((strlen(target_note) - 1) * sizeof(char));
-    strncpy(target_pitch_class_str, target_note, strlen(target_note) - 1);
-
-    int target_pitch_class = -1;
-
-    for (int i = 0; i < 12; i++) {
-        if (strcmp(pitch_classes[i], target_pitch_class_str) == 0) {
-            target_pitch_class = i;
-            break;
-        }
-    }
-
-    free(target_pitch_class_str);
-
-    // Calculate the semitone shift using the formula
-    return (target_note_num - root_note_num) * 12 +
-        (target_pitch_class - root_pitch_class);
-}
-
-static float get_hz_by_semitone(size_t semitone) {
-    return PITCH_STANDARD * powf(powf(2.f, (1.f / 12.f)), semitone);
-}
-
-static Sound get_init_samples(float duration) {
-    size_t sample_count = (size_t)(duration * SAMPLE_RATE);
-    float* samples = malloc(sizeof(float) * sample_count);
-
-    for (double i = 0.0; i < duration * SAMPLE_RATE; i++) {
-        samples[(int)i] = i;
-    }
-
-    Sound res = {
-        .samples = samples,
-        .sample_count = sample_count
+    Sound result = {
+        .samples = total,
+        .sample_count = total_count
     };
 
-    return res;
+    return result;
 }
 
-/*
-static Sound get_attack_samples() {
-    float attack_time = 0.001 * ATTACK_MS;
-    size_t sample_count = (size_t)(attack_time * SAMPLE_RATE);
-    float* attack = malloc(sizeof(float) * sample_count);
-    float samples_to_rise = SAMPLE_RATE * attack_time;
-    float rising_delta = 1.0 / samples_to_rise;
-    float i = 0.0;
-
-    for (int j = 0; j < sample_count; j++) {
-        i += rising_delta;
-        attack[j] = fmin(i, 1.0);
-    }
-
-    Sound res = {
-        .samples = attack,
-        .sample_count = sample_count
-    };
-
-    return res;
-}
-*/
+//------------------------------------------------------------------------------------
+// Oscillator
+//------------------------------------------------------------------------------------
 
 typedef enum {
     Sine,
@@ -141,6 +74,22 @@ typedef struct OscillatorGenerationParameter {
     OscillatorParameterList oscillators;
     float sample;
 } OscillatorGenerationParameter;
+
+static Sound get_init_samples(float duration) {
+    size_t sample_count = (size_t)(duration * SAMPLE_RATE);
+    float* samples = malloc(sizeof(float) * sample_count);
+
+    for (double i = 0.0; i < duration * SAMPLE_RATE; i++) {
+        samples[(int)i] = i;
+    }
+
+    Sound res = {
+        .samples = samples,
+        .sample_count = sample_count
+    };
+
+    return res;
+}
 
 static float pos(float hz, float x) {
     return fmodf(hz * x / SAMPLE_RATE, 1);
@@ -238,6 +187,81 @@ static Sound freq(float duration, OscillatorParameterList osc) {
     return res;
 }
 
+/*
+static Sound get_attack_samples() {
+    float attack_time = 0.001 * ATTACK_MS;
+    size_t sample_count = (size_t)(attack_time * SAMPLE_RATE);
+    float* attack = malloc(sizeof(float) * sample_count);
+    float samples_to_rise = SAMPLE_RATE * attack_time;
+    float rising_delta = 1.0 / samples_to_rise;
+    float i = 0.0;
+
+    for (int j = 0; j < sample_count; j++) {
+        i += rising_delta;
+        attack[j] = fmin(i, 1.0);
+    }
+
+    Sound res = {
+        .samples = attack,
+        .sample_count = sample_count
+    };
+
+    return res;
+}
+*/
+
+//------------------------------------------------------------------------------------
+// Synth
+//------------------------------------------------------------------------------------
+
+static size_t get_semitone_shift_internal(char* root_note, char* target_note) {
+    char* pitch_classes[12] =
+        { "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B" };
+
+    // Extract the note number and pitch class for the root note
+    int root_note_num = (int)root_note[strlen(root_note) - 1] - '0';
+
+    char* root_pitch_class_str = malloc((strlen(root_note) - 1) * sizeof(char));
+    strncpy(root_pitch_class_str, root_note, strlen(root_note) - 1);
+
+    int root_pitch_class = -1;
+
+    for (int i = 0; i < 12; i++) {
+        if (strcmp(pitch_classes[i], root_pitch_class_str) == 0) {
+            root_pitch_class = i;
+            break;
+        }
+    }
+
+    free(root_pitch_class_str);
+
+    // Extract the note number and pitch class for the target note
+    int target_note_num = (int)target_note[strlen(target_note) - 1] - '0';
+
+    char* target_pitch_class_str =
+        malloc((strlen(target_note) - 1) * sizeof(char));
+    strncpy(target_pitch_class_str, target_note, strlen(target_note) - 1);
+
+    int target_pitch_class = -1;
+
+    for (int i = 0; i < 12; i++) {
+        if (strcmp(pitch_classes[i], target_pitch_class_str) == 0) {
+            target_pitch_class = i;
+            break;
+        }
+    }
+
+    free(target_pitch_class_str);
+
+    // Calculate the semitone shift using the formula
+    return (target_note_num - root_note_num) * 12 +
+        (target_pitch_class - root_pitch_class);
+}
+
+static float get_hz_by_semitone(size_t semitone) {
+    return PITCH_STANDARD * powf(powf(2.f, (1.f / 12.f)), semitone);
+}
+
 size_t get_semitone_shift(char* target_note) {
     return get_semitone_shift_internal("A4", target_note);
 }
@@ -276,32 +300,10 @@ Sound get_note_sound(Note input) {
     return note(semitone_shift, length);
 }
 
-// frees the original sounds
-Sound concat_sounds(Sound* sounds, size_t count) {
-    size_t total_count = 0;
-    for (size_t i = 0; i < count; i++) {
-        total_count += sounds[i].sample_count;
-    }
-    // array to hold the result
-    float* total = malloc(total_count * sizeof(float));
 
-    size_t current_count = 0;
-    for (size_t i = 0; i < count; i++) {
-        memcpy(total + current_count,
-            sounds[i].samples,
-            sounds[i].sample_count * sizeof(float));
-        current_count += sounds[i].sample_count;
-
-        free(sounds[i].samples);
-    }
-
-    Sound result = {
-        .samples = total,
-        .sample_count = total_count
-    };
-
-    return result;
-}
+//------------------------------------------------------------------------------------
+// Wav File 
+//------------------------------------------------------------------------------------
 
 static uint16_t toInt16Sample(float sample) {
     return (uint16_t)(sample * 32767.f);
@@ -318,7 +320,6 @@ static void write_file(char* filename, void* data, int size) {
 
     fclose(fp);  // close file
 }
-
 
 void pack(uint16_t* d, size_t length) {
     size_t dataLength = length * 2;
@@ -373,7 +374,9 @@ void pack(uint16_t* d, size_t length) {
     write_file("output.wav", buffer, fileSize);
 }
 
-
+//------------------------------------------------------------------------------------
+// Main
+//------------------------------------------------------------------------------------
 
 int main(int argc, char **argv) {
     char* input = "A4-4 A4-4 A4-4 A4-4 A4-2 A4-4 A4-4 A4-4 A4-4 A4-4 A4-2 D5-4 D5-4 D5-4 D5-4 D5-4 D5-4 D5-2 C5-4 C5-4 C5-4 C5-4 C5-4 C5-4 C5-2 G4-2 ";
