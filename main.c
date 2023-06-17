@@ -12,9 +12,117 @@
 #define PITCH_STANDARD 440.f
 #define VOLUME 0.5f
 #define ATTACK_MS 100.f
+#define STREAM_BUFFER_SIZE 2048
 
 #define SYNTH_PI 3.1415926535f
 #define SYNTH_VOLUME 0.5f
+
+#define WINDOW_WIDTH 640
+#define WINDOW_HEIGHT 480
+
+
+//------------------------------------------------------------------------------------
+// Ring Buffer
+//------------------------------------------------------------------------------------
+
+typedef struct RingBuffer {
+    float* items;
+    size_t head;
+    size_t tail;
+    int is_full;
+    int is_empty;
+    size_t size;
+} RingBuffer;
+
+RingBuffer ring_buffer_init(size_t buffer_size) {
+    RingBuffer buffer = {
+        .items = calloc(buffer_size, sizeof(float)),
+        .head = 0,
+        .tail = 0,
+        .is_full = 0,
+        .is_empty = 1,
+        .size = buffer_size
+    };
+
+    return buffer;
+}
+
+void ring_buffer_reset(RingBuffer* me) {
+    me->head = 0;
+    me->tail = 0;
+    me->is_full = 0;
+}
+
+// +
+static void advance_pointer(RingBuffer* me) {
+    if(me->is_full) {
+        me->tail++;
+		if (me->tail == me->size) { 
+			me->tail = 0;
+		}
+	}
+    me->head++;
+	if (me->head == me->size) { 
+		me->head = 0;
+	}
+    size_t is_full = me->head == me->tail ? 1 : 0;
+	me->is_full = is_full;
+}
+
+// -
+static void retreat_pointer(RingBuffer* me) {
+	me->is_full = 0;
+    me->tail++;
+	if (me->tail == me->size) { 
+		me->tail = 0;
+	}
+}
+
+void ring_buffer_write(RingBuffer* buffer, float* data, size_t count) {
+    if (buffer->is_full || buffer->head + count > buffer->size) {
+        printf("[WARN] Trying to overfill the ring buffer: \n\tIsFull:%d\n\tHead:%zu\n\tCount:%zu\n\t", 
+            buffer->is_full,
+            buffer->head, 
+            count);
+        return;
+    }
+    buffer->is_empty = 0;
+
+    for (size_t i = 0; i < count; i++) {
+        buffer->items[buffer->head] = data[i];
+        advance_pointer(buffer);
+    }
+    //me->is_empty = is_full && (me->head == me->tail);
+}
+
+int ring_buffer_read(RingBuffer* buffer, float* output, size_t count) {
+    if (buffer->is_empty) {
+        printf("[WARN] Trying to read empty buffer");
+        return 0;
+    }
+
+    for (size_t i = 0; i < count; i++) {
+        output[i] = buffer->items[buffer->tail];
+        retreat_pointer(buffer);
+    }
+    buffer->is_empty = !buffer->is_full && (buffer->head == buffer->tail);
+    return 1;
+}
+
+size_t ring_buffer_size(RingBuffer* buffer) {
+	size_t size = buffer->size;
+	if(!buffer->is_full) {
+		if(buffer->head >= buffer->tail) {
+			size = (buffer->head - buffer->tail);
+		}
+		else {
+			size = (buffer->size + buffer->head - buffer->tail);
+		}
+	}
+
+	return size;
+}
+
 
 //------------------------------------------------------------------------------------
 // General SynthSound
@@ -24,9 +132,6 @@ typedef struct SynthSound {
     float* samples;
     size_t sample_count;
 } SynthSound;
-
-float synth_buffer[1024];
-SynthSound synth_sound;
 
 // frees the original sounds
 SynthSound concat_sounds(SynthSound* sounds, size_t count) {
@@ -291,7 +396,7 @@ SynthSound note(int semitone, float beats) {
     float duration = beats * BEAT_DURATION;
 
     OscillatorParameter first = {
-        .osc = Saw,
+        .osc = Square,
         .freq = hz
     };
 
@@ -429,49 +534,137 @@ size_t detect_note_pressed(Note* note) {
 }
 
 //------------------------------------------------------------------------------------
+// UI
+//------------------------------------------------------------------------------------
+/*
+int get_zero_crossing(SynthSound* sound) {
+    int zero_crossing_index = 0;
+    for (size_t i = 1; i < sound->sample_count; i++)
+    {
+        if (sound->samples[i] >= 0.0f && sound->samples[i-1] < 0.0f) // zero-crossing
+        {
+            zero_crossing_index = i;
+            break;
+        }
+    }
+    return zero_crossing_index;
+}
+
+Vector2* GetVisualSignal(SynthSound* sound, int zero_crossing_index)
+{
+    const int signal_amp = 300;
+    
+    Vector2* signal_points = malloc(sizeof(Vector2) * STREAM_BUFFER_SIZE);
+    
+    const float screen_vertical_midpoint = (WINDOW_HEIGHT/2);
+    for (size_t point_idx = 0; point_idx < sound->sample_count; point_idx++)
+    {
+        const int signal_idx = (point_idx + zero_crossing_index) % STREAM_BUFFER_SIZE;
+        signal_points[point_idx].x = (float)point_idx + WINDOW_WIDTH;
+        signal_points[point_idx].y = screen_vertical_midpoint + (int)(sound->samples[signal_idx] * 300);
+    }
+
+    return signal_points;
+}
+
+*/
+
+//------------------------------------------------------------------------------------
 // Main
 //------------------------------------------------------------------------------------
 
 int main(int argc, char **argv) {
-    const size_t width = 640;
-    const size_t height = 480;
-
-    InitWindow(width, height, "SeeSynth - v0.1");
-    SetTargetFPS(120); 
+    InitWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "SeeSynth - v0.1");
+    SetTargetFPS(120);
 
     Note current_note = {
         .length = 1,
         .name = malloc(sizeof(char) * 3)
     };
 
-    synth_sound = (SynthSound){.sample_count = 1024, .samples = synth_buffer};
+    SynthSound sound = {
+        .sample_count = 0
+    };
+    int sound_played_count = 0;
+    float temp_buffer[STREAM_BUFFER_SIZE];
+    RingBuffer ring_buffer = ring_buffer_init(STREAM_BUFFER_SIZE);
+
 
     InitAudioDevice();
     SetMasterVolume(SYNTH_VOLUME);
+    SetAudioStreamBufferSizeDefault(STREAM_BUFFER_SIZE);
     AudioStream synth_stream = LoadAudioStream(SAMPLE_RATE, sizeof(float) * 8, 1);//float*8
     SetAudioStreamVolume(synth_stream, 0.5f);
+
     PlayAudioStream(synth_stream);
     
     // Main game loop
     while (!WindowShouldClose())    // Detect window close button or ESC key
     {
-        // Update
+        // Update Audio states
+        //----------------------------------------------------------------------------------
+        // Fill ring buffer from current sound
+        size_t size_for_buffer = 0;
+        if (!ring_buffer.is_full && sound.sample_count != sound_played_count) {
+            printf("[INFO] IsFull:%d Samples:%zu Played:%zu\n", 
+                ring_buffer.is_full, 
+                sound.sample_count, 
+                sound_played_count);
+            
+            size_t buffer_write_size = ring_buffer.size - ring_buffer_size(&ring_buffer);
+            
+            // how many samples need write
+            size_t size_to_fill = 0;
+            
+            if ((sound.sample_count - sound_played_count) > ring_buffer.size) {
+                //filling_counter = ring_buffer.size;//sound.sample_count - ring_buffer.size;
+                size_to_fill = ring_buffer.size;
+            } else {
+                size_to_fill = sound.sample_count - sound_played_count;
+            }
+
+            printf("[INFO] SizeToFill:%zu\n", size_to_fill);
+            for (size_t i = 0; i < size_to_fill; i++) {
+                temp_buffer[i] = sound.samples[i];
+            }
+            
+            ring_buffer_write(&ring_buffer, temp_buffer, size_to_fill);
+            sound_played_count += size_to_fill;
+            size_for_buffer = size_to_fill;
+            // printf("[INFO] The ring buffer: \n\tIsFull:%d\n\tIsEmpty:%d\n\tHead:%zu\n\tTail:%zu\n\t", 
+            //     ring_buffer.is_full, 
+            //     ring_buffer.is_empty, 
+            //     ring_buffer.head, 
+            //     ring_buffer.tail);
+        }
+
+        // Play ring-buffered audio
+        if (IsAudioStreamProcessed(synth_stream)
+            && !ring_buffer.is_empty) {
+                size_t size_to_read = ring_buffer_size(&ring_buffer);
+                
+                printf("Samples to play:%zu \n", size_to_read);
+                printf("Samples will be played:%zu\n", size_for_buffer);
+                for (size_t i=0;i< STREAM_BUFFER_SIZE; i++) {
+                    temp_buffer[i] = 0;
+                }
+                ring_buffer_read(&ring_buffer, temp_buffer, size_for_buffer);
+
+                UpdateAudioStream(synth_stream, temp_buffer, size_for_buffer);
+                
+                if (sound.sample_count == sound_played_count) {
+                    ring_buffer_reset(&ring_buffer);
+                }
+        }
+        //----------------------------------------------------------------------------------
+        
+        // Update On Input
         //----------------------------------------------------------------------------------
         if (detect_note_pressed(&current_note)) {
-            //get_note_sound(current_note);
-            SynthSound sound = get_note_sound(current_note);
-            //sound_buffer.sample_count = sound.sample_count;
-            //memcpy(sound_buffer.samples, sound.samples, sound.sample_count);
-            if (IsAudioStreamReady(synth_stream)) {
-                if (IsAudioStreamProcessed(synth_stream)) {
-                    printf("Samples to play:%zu \n", sound.sample_count);
-                    UpdateAudioStream(synth_stream, sound.samples, sound.sample_count);
-                }
-            }
-            //}
+            sound = get_note_sound(current_note);
+            sound_played_count = 0;
             printf("Note played: %s\n", current_note.name);
         }
-        //UpdateAudioStream(synth_stream, synth_sound.samples, synth_sound.sample_count);
         //----------------------------------------------------------------------------------
  
         // Draw
@@ -479,6 +672,9 @@ int main(int argc, char **argv) {
         BeginDrawing();
  
             ClearBackground(RAYWHITE);
+            // int zero_crossing = get_zero_crossing(&sound);
+            // Vector2* visual_signal = GetVisualSignal(&sound, zero_crossing);
+            // DrawLineStrip(visual_signal, STREAM_BUFFER_SIZE - zero_crossing, RED);
  
             DrawText("Congrats! You created your first window!", 190, 200, 20, LIGHTGRAY);
  
