@@ -25,6 +25,9 @@ typedef struct SynthSound {
     size_t sample_count;
 } SynthSound;
 
+float synth_buffer[1024];
+SynthSound synth_sound;
+
 // frees the original sounds
 SynthSound concat_sounds(SynthSound* sounds, size_t count) {
     size_t total_count = 0;
@@ -181,6 +184,20 @@ static SynthSound freq(float duration, OscillatorParameterList osc) {
     }
     */
 
+    // if (samples.sample_count > 1024) {
+    //     samples.sample_count = 1024;
+    // }
+    // //todo: move to somewhere
+    // for (size_t i = 0; i < 1024; i++) {
+    //     synth_sound.samples[i] = 0.0f;
+    // }
+
+    // for (size_t i = 0; i < samples.sample_count; i++) {
+    //     synth_sound.samples[i] = output[i];
+    // }
+    // synth_sound.sample_count = samples.sample_count;
+
+
     // return zipped array
     SynthSound res = {
         .samples = output,
@@ -217,7 +234,7 @@ static SynthSound get_attack_samples() {
 // Synth
 //------------------------------------------------------------------------------------
 
-static size_t get_semitone_shift_internal(char* root_note, char* target_note) {
+static int get_semitone_shift_internal(char* root_note, char* target_note) {
     char* pitch_classes[12] =
         { "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B" };
 
@@ -261,21 +278,21 @@ static size_t get_semitone_shift_internal(char* root_note, char* target_note) {
         (target_pitch_class - root_pitch_class);
 }
 
-static float get_hz_by_semitone(size_t semitone) {
+static float get_hz_by_semitone(int semitone) {
     return PITCH_STANDARD * powf(powf(2.f, (1.f / 12.f)), semitone);
 }
 
-size_t get_semitone_shift(char* target_note) {
+int get_semitone_shift(char* target_note) {
     return get_semitone_shift_internal("A4", target_note);
 }
 
-SynthSound note(size_t semitone, float beats) {
+SynthSound note(int semitone, float beats) {
     float hz = get_hz_by_semitone(semitone);
     float duration = beats * BEAT_DURATION;
 
     OscillatorParameter first = {
         .osc = Saw,
-        .freq = hz/4.f
+        .freq = hz
     };
 
     OscillatorParameter second = {
@@ -288,10 +305,10 @@ SynthSound note(size_t semitone, float beats) {
         .freq = hz - 1.f
     };
 
-    OscillatorParameter oscArray[] = { first, second, third };
+    OscillatorParameter oscArray[] = { first/*, second, third */};
     OscillatorParameterList parameters = {
         .array = oscArray,
-        .count = 3
+        .count = 1
     };
 
     return freq(duration, parameters);
@@ -299,7 +316,7 @@ SynthSound note(size_t semitone, float beats) {
 
 SynthSound get_note_sound(Note input) {
     float length = 1.f / input.length;
-    size_t semitone_shift = get_semitone_shift(input.name);
+    int semitone_shift = get_semitone_shift(input.name);
     return note(semitone_shift, length);
 }
 
@@ -420,25 +437,31 @@ int main(int argc, char **argv) {
     const size_t height = 480;
 
     InitWindow(width, height, "SeeSynth - v0.1");
-    SetTargetFPS(60); 
+    SetTargetFPS(120); 
 
     Note current_note = {
         .length = 1,
         .name = malloc(sizeof(char) * 3)
     };
 
+    synth_sound = (SynthSound){.sample_count = 1024, .samples = synth_buffer};
+
     InitAudioDevice();
     SetMasterVolume(SYNTH_VOLUME);
     AudioStream synth_stream = LoadAudioStream(SAMPLE_RATE, sizeof(float) * 8, 1);//float*8
-    SetAudioStreamVolume(synth_stream, 0.01f);
+    SetAudioStreamVolume(synth_stream, 0.5f);
     PlayAudioStream(synth_stream);
+    
     // Main game loop
     while (!WindowShouldClose())    // Detect window close button or ESC key
     {
         // Update
         //----------------------------------------------------------------------------------
         if (detect_note_pressed(&current_note)) {
+            //get_note_sound(current_note);
             SynthSound sound = get_note_sound(current_note);
+            //sound_buffer.sample_count = sound.sample_count;
+            //memcpy(sound_buffer.samples, sound.samples, sound.sample_count);
             if (IsAudioStreamReady(synth_stream)) {
                 if (IsAudioStreamProcessed(synth_stream)) {
                     printf("Samples to play:%zu \n", sound.sample_count);
@@ -448,6 +471,7 @@ int main(int argc, char **argv) {
             //}
             printf("Note played: %s\n", current_note.name);
         }
+        //UpdateAudioStream(synth_stream, synth_sound.samples, synth_sound.sample_count);
         //----------------------------------------------------------------------------------
  
         // Draw
@@ -461,7 +485,7 @@ int main(int argc, char **argv) {
         EndDrawing();
         //----------------------------------------------------------------------------------
     }
-
+    
     char* input = "A4-4 A4-4 A4-4 A4-4 A4-2 A4-4 A4-4 A4-4 A4-4 A4-4 A4-2 D5-4 D5-4 D5-4 D5-4 D5-4 D5-4 D5-2 C5-4 C5-4 C5-4 C5-4 C5-4 C5-4 C5-2 G4-2 ";
     char* buf = malloc(strlen(input) + 1);
     strcpy(buf, input);
