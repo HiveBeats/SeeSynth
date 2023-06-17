@@ -12,7 +12,7 @@
 #define PITCH_STANDARD 440.f
 #define VOLUME 0.5f
 #define ATTACK_MS 100.f
-#define STREAM_BUFFER_SIZE 2048
+#define STREAM_BUFFER_SIZE 4096*4
 
 #define SYNTH_PI 3.1415926535f
 #define SYNTH_VOLUME 0.5f
@@ -20,6 +20,9 @@
 #define WINDOW_WIDTH 640
 #define WINDOW_HEIGHT 480
 
+#define write_log(format,args...) do { \
+        printf(format, ## args); \
+    } while(0)
 
 //------------------------------------------------------------------------------------
 // Ring Buffer
@@ -80,7 +83,7 @@ static void retreat_pointer(RingBuffer* me) {
 
 void ring_buffer_write(RingBuffer* buffer, float* data, size_t count) {
     if (buffer->is_full || buffer->head + count > buffer->size) {
-        printf("[WARN] Trying to overfill the ring buffer: \n\tIsFull:%d\n\tHead:%zu\n\tCount:%zu\n\t", 
+        write_log("[WARN] Trying to overfill the ring buffer: \n\tIsFull:%d\n\tHead:%zu\n\tCount:%zu\n\t", 
             buffer->is_full,
             buffer->head, 
             count);
@@ -97,7 +100,7 @@ void ring_buffer_write(RingBuffer* buffer, float* data, size_t count) {
 
 int ring_buffer_read(RingBuffer* buffer, float* output, size_t count) {
     if (buffer->is_empty) {
-        printf("[WARN] Trying to read empty buffer");
+        write_log("[WARN] Trying to read empty buffer");
         return 0;
     }
 
@@ -121,6 +124,14 @@ size_t ring_buffer_size(RingBuffer* buffer) {
 	}
 
 	return size;
+}
+
+void ring_buffer_print(RingBuffer* me) {
+    write_log("[INFO] The ring buffer: \n\tIsFull:%d\n\tIsEmpty:%d\n\tHead:%zu\n\tTail:%zu\n\t", 
+                me->is_full, 
+                me->is_empty, 
+                me->head, 
+                me->tail);
 }
 
 
@@ -501,7 +512,7 @@ void pack(uint16_t* d, size_t length) {
 
 size_t detect_note_pressed(Note* note) {
     size_t is_pressed = 0;
-    note->length = 16;
+    note->length = 2;
     if (IsKeyPressed(KEY_A)) {
         strcpy(note->name, "A4");
         is_pressed = 1;
@@ -575,7 +586,7 @@ Vector2* GetVisualSignal(SynthSound* sound, int zero_crossing_index)
 
 int main(int argc, char **argv) {
     InitWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "SeeSynth - v0.1");
-    SetTargetFPS(120);
+    SetTargetFPS(60);
 
     Note current_note = {
         .length = 1,
@@ -606,52 +617,39 @@ int main(int argc, char **argv) {
         // Fill ring buffer from current sound
         size_t size_for_buffer = 0;
         if (!ring_buffer.is_full && sound.sample_count != sound_played_count) {
-            printf("[INFO] IsFull:%d Samples:%zu Played:%zu\n", 
+            write_log("[INFO] IsFull:%d Samples:%zu Played:%zu\n", 
                 ring_buffer.is_full, 
                 sound.sample_count, 
                 sound_played_count);
-            
-            size_t buffer_write_size = ring_buffer.size - ring_buffer_size(&ring_buffer);
             
             // how many samples need write
             size_t size_to_fill = 0;
             
             if ((sound.sample_count - sound_played_count) > ring_buffer.size) {
-                //filling_counter = ring_buffer.size;//sound.sample_count - ring_buffer.size;
                 size_to_fill = ring_buffer.size;
             } else {
                 size_to_fill = sound.sample_count - sound_played_count;
             }
 
-            printf("[INFO] SizeToFill:%zu\n", size_to_fill);
+            write_log("[INFO] SizeToFill:%zu\n", size_to_fill);
             for (size_t i = 0; i < size_to_fill; i++) {
                 temp_buffer[i] = sound.samples[i];
             }
             
             ring_buffer_write(&ring_buffer, temp_buffer, size_to_fill);
             sound_played_count += size_to_fill;
-            size_for_buffer = size_to_fill;
-            // printf("[INFO] The ring buffer: \n\tIsFull:%d\n\tIsEmpty:%d\n\tHead:%zu\n\tTail:%zu\n\t", 
-            //     ring_buffer.is_full, 
-            //     ring_buffer.is_empty, 
-            //     ring_buffer.head, 
-            //     ring_buffer.tail);
         }
 
         // Play ring-buffered audio
-        if (IsAudioStreamProcessed(synth_stream)
-            && !ring_buffer.is_empty) {
+        if (IsAudioStreamProcessed(synth_stream) && !ring_buffer.is_empty) {
                 size_t size_to_read = ring_buffer_size(&ring_buffer);
                 
-                printf("Samples to play:%zu \n", size_to_read);
-                printf("Samples will be played:%zu\n", size_for_buffer);
-                for (size_t i=0;i< STREAM_BUFFER_SIZE; i++) {
-                    temp_buffer[i] = 0;
-                }
-                ring_buffer_read(&ring_buffer, temp_buffer, size_for_buffer);
-
-                UpdateAudioStream(synth_stream, temp_buffer, size_for_buffer);
-                
+                write_log("Samples to play:%zu \n", size_to_read);
+                //todo: try to start reading directly from ring buffer, avoiding temp_buffer
+                ring_buffer_read(&ring_buffer, temp_buffer, size_to_read);
+                // can try the SetAudioStreamCallback
+                UpdateAudioStream(synth_stream, temp_buffer, size_to_read);
+                // can overwrite the ring buffer to avoid that
                 if (sound.sample_count == sound_played_count) {
                     ring_buffer_reset(&ring_buffer);
                 }
@@ -663,7 +661,7 @@ int main(int argc, char **argv) {
         if (detect_note_pressed(&current_note)) {
             sound = get_note_sound(current_note);
             sound_played_count = 0;
-            printf("Note played: %s\n", current_note.name);
+            write_log("Note played: %s\n", current_note.name);
         }
         //----------------------------------------------------------------------------------
  
@@ -677,6 +675,7 @@ int main(int argc, char **argv) {
             // DrawLineStrip(visual_signal, STREAM_BUFFER_SIZE - zero_crossing, RED);
  
             DrawText("Congrats! You created your first window!", 190, 200, 20, LIGHTGRAY);
+            DrawFPS(0,0);
  
         EndDrawing();
         //----------------------------------------------------------------------------------
