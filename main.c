@@ -376,23 +376,63 @@ void pack(uint16_t* d, size_t length) {
     write_file("output.wav", buffer, fileSize);
 }
 
+size_t detect_note_pressed(Note* note) {
+    size_t is_pressed = 0;
+    note->length = 1;
+    if (IsKeyPressed(KEY_A)) {
+        strcpy(note->name, "A4");
+        is_pressed = 1;
+    }
+    if (IsKeyPressed(KEY_B)) {
+        strcpy(note->name, "B4");
+        is_pressed = 1;
+    }
+    if (IsKeyPressed(KEY_C)) {
+        strcpy(note->name, "C4");
+        is_pressed = 1;
+    }
+    if (IsKeyPressed(KEY_D)) {
+        strcpy(note->name, "D4");
+        is_pressed = 1;
+    }
+    if (IsKeyPressed(KEY_E)) {
+        strcpy(note->name, "E4");
+        is_pressed = 1;
+    }
+    if (IsKeyPressed(KEY_F)) {
+        strcpy(note->name, "F4");
+        is_pressed = 1;
+    }
+    if (IsKeyPressed(KEY_G)) {
+        strcpy(note->name, "G4");
+        is_pressed = 1;
+    }
+    return is_pressed;
+}
+
 //------------------------------------------------------------------------------------
 // Main
 //------------------------------------------------------------------------------------
 
 int main(int argc, char **argv) {
-    const size_t width = 1280;
-    const size_t height = 720;
+    const size_t width = 640;
+    const size_t height = 480;
 
     InitWindow(width, height, "SeeSynth - v0.1");
-    //SetTargetFPS(60); 
-
+    SetTargetFPS(60); 
+    Note current_note = {
+        .length = 1,
+        .name = malloc(sizeof(char) * 3)
+    };
     // Main game loop
     while (!WindowShouldClose())    // Detect window close button or ESC key
     {
         // Update
         //----------------------------------------------------------------------------------
-        // TODO: Update your variables here
+        if (detect_note_pressed(&current_note)) {
+            SynthSound sound = get_note_sound(current_note);
+            printf("Note played: %s\n", current_note.name);
+        }
         //----------------------------------------------------------------------------------
  
         // Draw
