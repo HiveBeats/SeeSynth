@@ -4,6 +4,8 @@
 #include "math.h"
 #include "parser.h"
 
+#include "raylib.h"
+
 #define SAMPLE_RATE 48000.f
 #define BPM 120.f
 #define BEAT_DURATION 60.f/BPM
@@ -11,19 +13,19 @@
 #define VOLUME 0.5f
 #define ATTACK_MS 100.f
 
-#define PI 3.1415926535f
+#define SYNTH_PI 3.1415926535f
 
 //------------------------------------------------------------------------------------
-// General Sound
+// General SynthSound
 //------------------------------------------------------------------------------------
 
-typedef struct Sound {
+typedef struct SynthSound {
     float* samples;
     size_t sample_count;
-} Sound;
+} SynthSound;
 
 // frees the original sounds
-Sound concat_sounds(Sound* sounds, size_t count) {
+SynthSound concat_sounds(SynthSound* sounds, size_t count) {
     size_t total_count = 0;
     for (size_t i = 0; i < count; i++) {
         total_count += sounds[i].sample_count;
@@ -41,7 +43,7 @@ Sound concat_sounds(Sound* sounds, size_t count) {
         free(sounds[i].samples);
     }
 
-    Sound result = {
+    SynthSound result = {
         .samples = total,
         .sample_count = total_count
     };
@@ -75,7 +77,7 @@ typedef struct OscillatorGenerationParameter {
     float sample;
 } OscillatorGenerationParameter;
 
-static Sound get_init_samples(float duration) {
+static SynthSound get_init_samples(float duration) {
     size_t sample_count = (size_t)(duration * SAMPLE_RATE);
     float* samples = malloc(sizeof(float) * sample_count);
 
@@ -83,7 +85,7 @@ static Sound get_init_samples(float duration) {
         samples[(int)i] = i;
     }
 
-    Sound res = {
+    SynthSound res = {
         .samples = samples,
         .sample_count = sample_count
     };
@@ -96,7 +98,7 @@ static float pos(float hz, float x) {
 }
 
 float sineosc(float hz, float x) {
-    return sinf(x * (2.f * PI * hz / SAMPLE_RATE));
+    return sinf(x * (2.f * SYNTH_PI * hz / SAMPLE_RATE));
 }
 
 static float sign(float v) {
@@ -138,9 +140,9 @@ float multiosc(OscillatorGenerationParameter param) {
     return osc_sample;
 }
 
-static Sound freq(float duration, OscillatorParameterList osc) {
-    Sound samples = get_init_samples(duration);
-    // Sound attack = get_attack_samples();
+static SynthSound freq(float duration, OscillatorParameterList osc) {
+    SynthSound samples = get_init_samples(duration);
+    // SynthSound attack = get_attack_samples();
 
     float* output = malloc(sizeof(float) * samples.sample_count);
     for (int i = 0; i < samples.sample_count; i++) {
@@ -179,7 +181,7 @@ static Sound freq(float duration, OscillatorParameterList osc) {
     */
 
     // return zipped array
-    Sound res = {
+    SynthSound res = {
         .samples = output,
         .sample_count = samples.sample_count
     };
@@ -188,7 +190,7 @@ static Sound freq(float duration, OscillatorParameterList osc) {
 }
 
 /*
-static Sound get_attack_samples() {
+static SynthSound get_attack_samples() {
     float attack_time = 0.001 * ATTACK_MS;
     size_t sample_count = (size_t)(attack_time * SAMPLE_RATE);
     float* attack = malloc(sizeof(float) * sample_count);
@@ -201,7 +203,7 @@ static Sound get_attack_samples() {
         attack[j] = fmin(i, 1.0);
     }
 
-    Sound res = {
+    SynthSound res = {
         .samples = attack,
         .sample_count = sample_count
     };
@@ -266,7 +268,7 @@ size_t get_semitone_shift(char* target_note) {
     return get_semitone_shift_internal("A4", target_note);
 }
 
-Sound note(size_t semitone, float beats) {
+SynthSound note(size_t semitone, float beats) {
     float hz = get_hz_by_semitone(semitone);
     float duration = beats * BEAT_DURATION;
 
@@ -294,7 +296,7 @@ Sound note(size_t semitone, float beats) {
     return freq(duration, parameters);
 }
 
-Sound get_note_sound(Note input) {
+SynthSound get_note_sound(Note input) {
     float length = 1.f / input.length;
     size_t semitone_shift = get_semitone_shift(input.name);
     return note(semitone_shift, length);
@@ -379,24 +381,55 @@ void pack(uint16_t* d, size_t length) {
 //------------------------------------------------------------------------------------
 
 int main(int argc, char **argv) {
+    const size_t width = 1280;
+    const size_t height = 720;
+
+    InitWindow(width, height, "SeeSynth - v0.1");
+    //SetTargetFPS(60); 
+
+    // Main game loop
+    while (!WindowShouldClose())    // Detect window close button or ESC key
+    {
+        // Update
+        //----------------------------------------------------------------------------------
+        // TODO: Update your variables here
+        //----------------------------------------------------------------------------------
+ 
+        // Draw
+        //----------------------------------------------------------------------------------
+        BeginDrawing();
+ 
+            ClearBackground(RAYWHITE);
+ 
+            DrawText("Congrats! You created your first window!", 190, 200, 20, LIGHTGRAY);
+ 
+        EndDrawing();
+        //----------------------------------------------------------------------------------
+    }
+
     char* input = "A4-4 A4-4 A4-4 A4-4 A4-2 A4-4 A4-4 A4-4 A4-4 A4-4 A4-2 D5-4 D5-4 D5-4 D5-4 D5-4 D5-4 D5-2 C5-4 C5-4 C5-4 C5-4 C5-4 C5-4 C5-2 G4-2 ";
     char* buf = malloc(strlen(input) + 1);
     strcpy(buf, input);
 
     NoteArray note_array = parse_notes(buf, strlen(buf));
-    Sound* sounds = malloc(sizeof(Sound) * note_array.count);
+    SynthSound* sounds = malloc(sizeof(SynthSound) * note_array.count);
     for (size_t i = 0; i < note_array.count; i++) {
         Note note = note_array.notes[i];
         sounds[i] = get_note_sound(note);
     }
 
-    Sound song = concat_sounds(sounds, note_array.count);
+    SynthSound song = concat_sounds(sounds, note_array.count);
     uint16_t* song_pcm = malloc(sizeof(uint16_t) * song.sample_count);
     for (size_t i = 0; i < song.sample_count; i++) {
         song_pcm[i] = toInt16Sample(song.samples[i]);
     }
 
     pack(song_pcm, song.sample_count);
+
+    // De-Initialization
+    //--------------------------------------------------------------------------------------
+    CloseWindow();        // Close window and OpenGL context
+    //--------------------------------------------------------------------------------------
 
     return 0;
 }
