@@ -14,6 +14,7 @@
 #define ATTACK_MS 100.f
 
 #define SYNTH_PI 3.1415926535f
+#define SYNTH_VOLUME 0.5f
 
 //------------------------------------------------------------------------------------
 // General SynthSound
@@ -378,7 +379,7 @@ void pack(uint16_t* d, size_t length) {
 
 size_t detect_note_pressed(Note* note) {
     size_t is_pressed = 0;
-    note->length = 1;
+    note->length = 16;
     if (IsKeyPressed(KEY_A)) {
         strcpy(note->name, "A4");
         is_pressed = 1;
@@ -420,10 +421,17 @@ int main(int argc, char **argv) {
 
     InitWindow(width, height, "SeeSynth - v0.1");
     SetTargetFPS(60); 
+
     Note current_note = {
         .length = 1,
         .name = malloc(sizeof(char) * 3)
     };
+
+    InitAudioDevice();
+    SetMasterVolume(SYNTH_VOLUME);
+    AudioStream synth_stream = LoadAudioStream(SAMPLE_RATE, sizeof(float) * 8, 1);//float*8
+    SetAudioStreamVolume(synth_stream, 0.01f);
+    PlayAudioStream(synth_stream);
     // Main game loop
     while (!WindowShouldClose())    // Detect window close button or ESC key
     {
@@ -431,6 +439,13 @@ int main(int argc, char **argv) {
         //----------------------------------------------------------------------------------
         if (detect_note_pressed(&current_note)) {
             SynthSound sound = get_note_sound(current_note);
+            if (IsAudioStreamReady(synth_stream)) {
+                if (IsAudioStreamProcessed(synth_stream)) {
+                    printf("Samples to play:%zu \n", sound.sample_count);
+                    UpdateAudioStream(synth_stream, sound.samples, sound.sample_count);
+                }
+            }
+            //}
             printf("Note played: %s\n", current_note.name);
         }
         //----------------------------------------------------------------------------------
@@ -468,6 +483,9 @@ int main(int argc, char **argv) {
 
     // De-Initialization
     //--------------------------------------------------------------------------------------
+    StopAudioStream(synth_stream);
+    UnloadAudioStream(synth_stream);    
+    CloseAudioDevice();
     CloseWindow();        // Close window and OpenGL context
     //--------------------------------------------------------------------------------------
 
