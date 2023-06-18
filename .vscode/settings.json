@@ -3,7 +3,11 @@
         "readability/casting"
     ],
     "files.associations": {
-        "algorithm": "c"
+        "algorithm": "c",
+        "__bit_reference": "c",
+        "bitset": "c",
+        "chrono": "c",
+        "unordered_map": "c"
     },
     "FSharp.suggestGitignore": false,
 }

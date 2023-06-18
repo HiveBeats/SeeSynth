@@ -2,7 +2,7 @@
 #define OSCILLATOR_H
 
 #include "utils.h"
-
+#define WAVE_SHAPE_OPTIONS "Sine;Triangle;Sawtooth;Square"
 typedef enum {
     Sine,
     Triangle,
@@ -10,23 +10,24 @@ typedef enum {
     Square
 } OscillatorType;
 
-typedef struct OscillatorParameter {
+typedef struct Oscillator {
     OscillatorType osc;
     float freq;
-} OscillatorParameter;
+    float volume;
+} Oscillator;
 
-typedef struct OscillatorParameterList {
-    OscillatorParameter* array;
+typedef struct OscillatorArray {
+    Oscillator* array;
     size_t count;
-} OscillatorParameterList;
+} OscillatorArray;
 
 typedef struct OscillatorGenerationParameter {
-    OscillatorParameterList oscillators;
+    OscillatorArray oscillators;
     float sample;
 } OscillatorGenerationParameter;
 
 float multiosc(OscillatorGenerationParameter param);
-SynthSound freq(float duration, OscillatorParameterList osc);
+SynthSound freq(float duration, OscillatorArray osc);
 
 
 

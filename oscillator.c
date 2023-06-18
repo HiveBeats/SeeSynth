@@ -46,19 +46,19 @@ static float sawosc(float hz, float x) {
 float multiosc(OscillatorGenerationParameter param) {
     float osc_sample = 0.f;
     for (size_t i = 0; i < param.oscillators.count; i++) {
-        OscillatorParameter osc = param.oscillators.array[i];
+        Oscillator osc = param.oscillators.array[i];
         switch (osc.osc) {
             case Sine:
-                osc_sample += sineosc(osc.freq, param.sample);
+                osc_sample += sineosc(osc.freq, param.sample) * osc.volume;
                 break;
             case Triangle:
-                osc_sample += triangleosc(osc.freq, param.sample);
+                osc_sample += triangleosc(osc.freq, param.sample) * osc.volume;
                 break;
             case Square:
-                osc_sample += squareosc(osc.freq, param.sample);
+                osc_sample += squareosc(osc.freq, param.sample) * osc.volume;
                 break;
             case Saw:
-                osc_sample += sawosc(osc.freq, param.sample);
+                osc_sample += sawosc(osc.freq, param.sample) * osc.volume;
                 break;
         }
     }
@@ -66,7 +66,7 @@ float multiosc(OscillatorGenerationParameter param) {
     return osc_sample;
 }
 
-SynthSound freq(float duration, OscillatorParameterList osc) {
+SynthSound freq(float duration, OscillatorArray osc) {
     SynthSound samples = get_init_samples(duration);
     // SynthSound attack = get_attack_samples();
 
@@ -77,7 +77,7 @@ SynthSound freq(float duration, OscillatorParameterList osc) {
             .oscillators = osc,
             .sample = sample
         };
-        output[i] = multiosc(param) * VOLUME;
+        output[i] = multiosc(param);
     }
 
     // create attack and release
