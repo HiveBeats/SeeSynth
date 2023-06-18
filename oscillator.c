@@ -68,7 +68,6 @@ float multiosc(OscillatorGenerationParameter param) {
 
 SynthSound freq(float duration, OscillatorArray osc) {
     SynthSound samples = get_init_samples(duration);
-    // SynthSound attack = get_attack_samples();
 
     float* output = malloc(sizeof(float) * samples.sample_count);
     for (int i = 0; i < samples.sample_count; i++) {
@@ -79,48 +78,7 @@ SynthSound freq(float duration, OscillatorArray osc) {
         };
         output[i] = multiosc(param);
     }
-
-    // create attack and release
-    /*
-        let adsrLength = Seq.length output
-        let attackArray = attack |> Seq.take adsrLength
-        let release = Seq.rev attackArray
-    */
-    /*
-     todo: I will change the ADSR approach to an explicit ADSR module(with it's own state)
-    size_t adsr_length = samples.sample_count;
-    float *attackArray = NULL, *releaseArray = NULL;
-
-    if (adsr_length > 0) {
-        //todo: calloc
-        attackArray = malloc(sizeof(float) * adsr_length);
-        size_t attack_length = attack.sample_count < adsr_length
-                ? attack.sample_count
-                : adsr_length;
-        
-        memcpy(attackArray, attack.samples, attack_length);
-        //todo: calloc
-        releaseArray = malloc(sizeof(float) * adsr_length);
-        memcpy(releaseArray, attackArray, attack_length);
-        reverse_array(releaseArray, 0, adsr_length);
-    }
-    */
-
-    // if (samples.sample_count > 1024) {
-    //     samples.sample_count = 1024;
-    // }
-    // //todo: move to somewhere
-    // for (size_t i = 0; i < 1024; i++) {
-    //     synth_sound.samples[i] = 0.0f;
-    // }
-
-    // for (size_t i = 0; i < samples.sample_count; i++) {
-    //     synth_sound.samples[i] = output[i];
-    // }
-    // synth_sound.sample_count = samples.sample_count;
-
-
-    // return zipped array
+    
     SynthSound res = {
         .samples = output,
         .sample_count = samples.sample_count
