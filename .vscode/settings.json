@@ -4,5 +4,6 @@
     ],
     "files.associations": {
         "algorithm": "c"
-    }
+    },
+    "FSharp.suggestGitignore": false,
 }
