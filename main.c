@@ -12,7 +12,7 @@
 #define PITCH_STANDARD 440.f
 #define VOLUME 0.5f
 #define ATTACK_MS 100.f
-#define STREAM_BUFFER_SIZE 4096*4
+#define STREAM_BUFFER_SIZE 4096
 
 #define SYNTH_PI 3.1415926535f
 #define SYNTH_VOLUME 0.5f
@@ -512,7 +512,7 @@ void pack(uint16_t* d, size_t length) {
 
 size_t detect_note_pressed(Note* note) {
     size_t is_pressed = 0;
-    note->length = 2;
+    note->length = 8;
     if (IsKeyPressed(KEY_A)) {
         strcpy(note->name, "A4");
         is_pressed = 1;
