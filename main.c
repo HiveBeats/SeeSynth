@@ -306,7 +306,7 @@ void DrawSignal(Synth* synth) {
 //------------------------------------------------------------------------------------
 
 int main(int argc, char **argv) {
-    InitWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "SeeSynth - v0.1");
+    InitWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "SeeSynth - v0.2");
     SetTargetFPS(60);
 
     //todo: move that variables to Synth declaration
