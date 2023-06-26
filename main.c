@@ -109,7 +109,7 @@ SynthSound note(Synth* synth, int semitone, float beats) {
     
     // will change after oscillator starts to be more autonomous
     for (size_t i = 0; i < synth->oscillators.count; i++) {
-        synth->oscillators.array[i].freq = hz;
+        osc_set_freq(&synth->oscillators.array[i], hz);
     }
 
     return freq(duration, synth->oscillators);
