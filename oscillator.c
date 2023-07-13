@@ -103,6 +103,8 @@ float multiosc(OscillatorGenerationParameter param) {
     float osc_sample = 0.f;
     for (size_t i = 0; i < param.oscillators.count; i++) {
         Oscillator* osc = &param.oscillators.array[i];
+        assert(osc);
+        
         switch (osc->osc) {
             case Sine:
                 osc_sample += sineosc(osc) * osc->volume;
@@ -123,21 +125,19 @@ float multiosc(OscillatorGenerationParameter param) {
 }
 
 SynthSound freq(float duration, OscillatorArray osc) {
-    SynthSound samples = get_init_samples(duration);
+    size_t sample_count = (size_t)(duration * SAMPLE_RATE);
     
-    float* output = malloc(sizeof(float) * samples.sample_count);
-    for (int i = 0; i < samples.sample_count; i++) {
-        float sample = samples.samples[i];
+    float* output = malloc(sizeof(float) * sample_count);
+    for (size_t i = 0; i < sample_count; i++) {
         OscillatorGenerationParameter param = {
-            .oscillators = osc,
-            .sample = sample
+            .oscillators = osc
         };
         output[i] = multiosc(param);
     }
     
     SynthSound res = {
         .samples = output,
-        .sample_count = samples.sample_count
+        .sample_count = sample_count
     };
 
     return res;

@@ -25,7 +25,6 @@ typedef struct OscillatorArray {
 
 typedef struct OscillatorGenerationParameter {
     OscillatorArray oscillators;
-    float sample;
 } OscillatorGenerationParameter;
 
 void osc_set_freq(Oscillator* osc, float freq);
