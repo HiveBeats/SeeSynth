@@ -3,6 +3,8 @@
 #include "math.h"
 #include "stdlib.h"
 
+#define TWO_PI 2*SYNTH_PI
+
 static SynthSound get_init_samples(float duration) {
     size_t sample_count = (size_t)(duration * SAMPLE_RATE);
     float* samples = malloc(sizeof(float) * sample_count);
@@ -23,42 +25,98 @@ static float pos(float hz, float x) {
     return fmodf(hz * x / SAMPLE_RATE, 1);
 }
 
-static float sineosc(float hz, float x) {
-    return sinf(x * (2.f * SYNTH_PI * hz / SAMPLE_RATE));
+static void sine_osc_phase_incr(Oscillator* osc) {
+    osc->phase += osc->phase_dt;
+    if (osc->phase >= TWO_PI)
+        osc->phase -= TWO_PI;
+}
+
+static void saw_osc_phase_incr(Oscillator* osc) {
+    osc->phase += osc->phase_dt;
+    if (osc->phase >= 1.0f)
+        osc->phase -= 1.0f;
+}
+
+static float calc_saw_phase_delta(float freq) {
+    return freq / SAMPLE_RATE;
+}
+
+static float calc_sine_phase_delta(float freq) {
+    return (TWO_PI * freq) / SAMPLE_RATE;
+}
+
+static float sineosc(Oscillator* osc) {
+    float result = sinf(osc->phase);
+    sine_osc_phase_incr(osc);
+    return result;
 }
 
 static float sign(float v) {
     return (v > 0.0) ? 1.f : -1.f;
 }
 
-static float squareosc(float hz, float x) {
-    return sign(sineosc(hz, x));
+static float squareosc(Oscillator* osc) {
+    return sign(sineosc(osc));
 }
 
-static float triangleosc(float hz, float x) {
-    return 1.f - fabsf(pos(hz, x) - 0.5f) * 4.f;
+static float triangleosc(Oscillator* osc) {
+    float result = 1.f - fabsf(osc->phase - 0.5f) * 4.f;
+    saw_osc_phase_incr(osc);
+    return result;
 }
 
-static float sawosc(float hz, float x) {
-    return pos(hz, x) * 2.f - 1.f;
+static float sawosc(Oscillator* osc) {
+    float result = osc->phase * 2.f - 1.f;
+    saw_osc_phase_incr(osc);
+    return result;
+}
+
+void osc_set_freq(Oscillator* osc, float freq) {
+    osc->freq = freq;
+    osc->phase = 0;
+    switch (osc->osc)
+    {
+        case Sine:
+            osc->phase_dt = calc_sine_phase_delta(freq);
+            break;
+        case Square:
+            osc->phase_dt = calc_sine_phase_delta(freq);
+            break;
+        case Triangle:
+            osc->phase_dt = calc_saw_phase_delta(freq);
+            break;
+        case Saw:
+            osc->phase_dt = calc_saw_phase_delta(freq);
+            break;
+        default:
+            break;
+    }
+}
+
+void osc_reset(Oscillator* osc) {
+    osc->volume = 0;
+    osc->phase = 0;
+    osc->phase_dt = 0;
 }
 
 float multiosc(OscillatorGenerationParameter param) {
     float osc_sample = 0.f;
     for (size_t i = 0; i < param.oscillators.count; i++) {
-        Oscillator osc = param.oscillators.array[i];
-        switch (osc.osc) {
+        Oscillator* osc = &param.oscillators.array[i];
+        assert(osc);
+        
+        switch (osc->osc) {
             case Sine:
-                osc_sample += sineosc(osc.freq, param.sample) * osc.volume;
+                osc_sample += sineosc(osc) * osc->volume;
                 break;
             case Triangle:
-                osc_sample += triangleosc(osc.freq, param.sample) * osc.volume;
+                osc_sample += triangleosc(osc) * osc->volume;
                 break;
             case Square:
-                osc_sample += squareosc(osc.freq, param.sample) * osc.volume;
+                osc_sample += squareosc(osc) * osc->volume;
                 break;
             case Saw:
-                osc_sample += sawosc(osc.freq, param.sample) * osc.volume;
+                osc_sample += sawosc(osc) * osc->volume;
                 break;
         }
     }
@@ -67,63 +125,19 @@ float multiosc(OscillatorGenerationParameter param) {
 }
 
 SynthSound freq(float duration, OscillatorArray osc) {
-    SynthSound samples = get_init_samples(duration);
-    // SynthSound attack = get_attack_samples();
-
-    float* output = malloc(sizeof(float) * samples.sample_count);
-    for (int i = 0; i < samples.sample_count; i++) {
-        float sample = samples.samples[i];
+    size_t sample_count = (size_t)(duration * SAMPLE_RATE);
+    
+    float* output = malloc(sizeof(float) * sample_count);
+    for (size_t i = 0; i < sample_count; i++) {
         OscillatorGenerationParameter param = {
-            .oscillators = osc,
-            .sample = sample
+            .oscillators = osc
         };
         output[i] = multiosc(param);
     }
-
-    // create attack and release
-    /*
-        let adsrLength = Seq.length output
-        let attackArray = attack |> Seq.take adsrLength
-        let release = Seq.rev attackArray
-    */
-    /*
-     todo: I will change the ADSR approach to an explicit ADSR module(with it's own state)
-    size_t adsr_length = samples.sample_count;
-    float *attackArray = NULL, *releaseArray = NULL;
-
-    if (adsr_length > 0) {
-        //todo: calloc
-        attackArray = malloc(sizeof(float) * adsr_length);
-        size_t attack_length = attack.sample_count < adsr_length
-                ? attack.sample_count
-                : adsr_length;
-        
-        memcpy(attackArray, attack.samples, attack_length);
-        //todo: calloc
-        releaseArray = malloc(sizeof(float) * adsr_length);
-        memcpy(releaseArray, attackArray, attack_length);
-        reverse_array(releaseArray, 0, adsr_length);
-    }
-    */
-
-    // if (samples.sample_count > 1024) {
-    //     samples.sample_count = 1024;
-    // }
-    // //todo: move to somewhere
-    // for (size_t i = 0; i < 1024; i++) {
-    //     synth_sound.samples[i] = 0.0f;
-    // }
-
-    // for (size_t i = 0; i < samples.sample_count; i++) {
-    //     synth_sound.samples[i] = output[i];
-    // }
-    // synth_sound.sample_count = samples.sample_count;
-
-
-    // return zipped array
+    
     SynthSound res = {
         .samples = output,
-        .sample_count = samples.sample_count
+        .sample_count = sample_count
     };
 
     return res;

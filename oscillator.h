@@ -14,6 +14,8 @@ typedef struct Oscillator {
     OscillatorType osc;
     float freq;
     float volume;
+    float phase;
+    float phase_dt;
 } Oscillator;
 
 typedef struct OscillatorArray {
@@ -23,9 +25,10 @@ typedef struct OscillatorArray {
 
 typedef struct OscillatorGenerationParameter {
     OscillatorArray oscillators;
-    float sample;
 } OscillatorGenerationParameter;
 
+void osc_set_freq(Oscillator* osc, float freq);
+void osc_reset(Oscillator* osc);
 float multiosc(OscillatorGenerationParameter param);
 SynthSound freq(float duration, OscillatorArray osc);
 

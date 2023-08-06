@@ -2,6 +2,7 @@
 #define UTILS_H
 
 #include "stdio.h"
+#include "assert.h"
 
 #define write_log(format,args...) do { \
         printf(format, ## args); \

@@ -93,6 +93,8 @@ static OscillatorArray init_osc_array() {
     };
 
     Oscillator* oscArray = malloc(sizeof(Oscillator*) * 1);
+    assert(oscArray);
+    
     oscArray[0] = first;
 
     OscillatorArray oscillators = {
@@ -109,7 +111,7 @@ SynthSound note(Synth* synth, int semitone, float beats) {
     
     // will change after oscillator starts to be more autonomous
     for (size_t i = 0; i < synth->oscillators.count; i++) {
-        synth->oscillators.array[i].freq = hz;
+        osc_set_freq(&synth->oscillators.array[i], hz);
     }
 
     return freq(duration, synth->oscillators);
@@ -160,6 +162,10 @@ size_t detect_note_pressed(Note* note) {
 // GUI
 //------------------------------------------------------------------------------------
 
+void note_on(Synth *synth, Note *note) {
+	
+}
+
 void DrawUi(Synth *synth) {
     const int panel_x_start = 0;
     const int panel_y_start = 0;
@@ -201,7 +207,11 @@ void DrawUi(Synth *synth) {
     for (int ui_osc_i = 0; ui_osc_i < synth->oscillators.count; ui_osc_i++)
     {
         OscillatorUI* ui_osc = &synth->ui_oscillators[ui_osc_i];
+        assert(ui_osc);
+
         Oscillator* osc = &synth->oscillators.array[ui_osc_i];
+        assert(osc);
+
         const bool has_shape_param = (ui_osc->waveshape == Square);
         
         // Draw Oscillator Panel
@@ -268,7 +278,11 @@ void DrawUi(Synth *synth) {
     for (int ui_osc_i = 0; ui_osc_i < synth->oscillators.count; ui_osc_i += 1)
     {
         OscillatorUI* ui_osc = &synth->ui_oscillators[ui_osc_i];
+        assert(ui_osc);
+
         Oscillator* osc = &synth->oscillators.array[ui_osc_i];
+        assert(osc);
+
         // Shape select
         int shape_index = (int)(ui_osc->waveshape);
         bool is_dropdown_click = GuiDropdownBox(ui_osc->shape_dropdown_rect, 
@@ -329,6 +343,8 @@ int main(int argc, char **argv) {
     for (size_t i = 0; i < synth.oscillators.count; i++)
     {
         OscillatorUI* ui = &synth.ui_oscillators[i];
+        assert(ui);
+
         ui->freq = synth.oscillators.array[i].freq;
         ui->waveshape = synth.oscillators.array[i].osc;
         ui->volume = synth.oscillators.array[i].volume;
@@ -353,9 +369,11 @@ int main(int argc, char **argv) {
         //----------------------------------------------------------------------------------
         // Fill ring buffer from current sound
         SynthSound* sound = synth.out_signal;
+        assert(sound);
+
         size_t size_for_buffer = 0;
         if (!ring_buffer.is_full && sound->sample_count != sound_played_count) {
-            write_log("[INFO] IsFull:%d Samples:%zu Played:%zu\n", 
+            write_log("[INFO] IsFull:%d Samples:%zu Played:%d\n", 
                 ring_buffer.is_full, 
                 sound->sample_count, 
                 sound_played_count);
@@ -396,11 +414,11 @@ int main(int argc, char **argv) {
         
         // Update On Input
         //----------------------------------------------------------------------------------
-        Note current_note = synth.current_note;
-        if (detect_note_pressed(&current_note)) {
-            *sound = get_note_sound(&synth, current_note);
+        Note* current_note = &synth.current_note;
+        if (detect_note_pressed(current_note)) {
+            *sound = get_note_sound(&synth, *current_note);
             sound_played_count = 0;
-            write_log("Note played: %s\n", current_note.name);
+            write_log("Note played: %s\n", current_note->name);
         }
         //----------------------------------------------------------------------------------
  
@@ -424,6 +442,8 @@ int main(int argc, char **argv) {
 
     NoteArray note_array = parse_notes(buf, strlen(buf));
     SynthSound* sounds = malloc(sizeof(SynthSound) * note_array.count);
+    assert(sounds);
+
     for (size_t i = 0; i < note_array.count; i++) {
         Note note = note_array.notes[i];
         sounds[i] = get_note_sound(&synth, note);
@@ -431,6 +451,8 @@ int main(int argc, char **argv) {
 
     SynthSound song = concat_sounds(sounds, note_array.count);
     uint16_t* song_pcm = malloc(sizeof(uint16_t) * song.sample_count);
+    assert(song_pcm);
+
     for (size_t i = 0; i < song.sample_count; i++) {
         song_pcm[i] = toInt16Sample(song.samples[i]);
     }
