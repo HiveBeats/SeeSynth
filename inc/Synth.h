@@ -12,7 +12,7 @@ private:
     std::vector<Oscillator*> m_oscillators;
     Adder m_adder;
     //OscillatorUI* ui_oscillators;
-    Note m_current_note;
+    //Note m_current_note;
     std::vector<float> m_out_signal;
     std::vector<float> & get_note(int semitone, float beats);
     
