@@ -7,6 +7,7 @@ typedef float (Oscillator::*DtFunction)(float);
 
 class Oscillator
 {
+    
     private:
         OscillatorType m_osc;
         float m_freq;
