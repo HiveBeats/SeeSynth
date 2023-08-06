@@ -5,4 +5,4 @@
 struct Note {
     std::string& name;
     int length;
-}
+};
