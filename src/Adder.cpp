@@ -4,7 +4,7 @@ std::vector<float> & Adder::SumOscillators(const std::vector<Oscillator*> & osci
 {
     size_t sample_count = (size_t)(duration * SAMPLE_RATE);
 
-    std::vector<float> output;// = new std::vector<float>();
+    std::vector<float> output = new std::vector<float>();
     output.reserve(sample_count);
 
     for (size_t i = 0; i < sample_count; i++) 
