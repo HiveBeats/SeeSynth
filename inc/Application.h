@@ -15,9 +15,11 @@ private:
     Note* m_current_note;
     Renderer m_renderer;
     std::size_t detect_note_pressed(Note* note);
-    void init_gui();
     void init_synth();
     void init_audio();
+    void update_on_note_input();
+    void play_buffered_audio();
+    void fill_audio_buffer();
 
 public:
     Application(/* args */);

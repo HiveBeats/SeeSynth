@@ -10,12 +10,6 @@ public:
     void Draw();
 };
 
-Renderer::Renderer(/* args */)
-{
-}
 
-Renderer::~Renderer()
-{
-}
 
 

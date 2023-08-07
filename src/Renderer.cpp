@@ -1,6 +1,17 @@
 #include "Renderer.h"
 #include "raylib.h"
 #include "raygui.h"
+#include "Settings.h"
+
+Renderer::Renderer(/* args */)
+{
+    InitWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "SeeSynth - v0.2");
+    SetTargetFPS(60);
+}
+
+Renderer::~Renderer()
+{
+}
 
 void Renderer::Draw()
 {
