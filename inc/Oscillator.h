@@ -2,11 +2,11 @@
 #include<vector>
 #include "OscillatorType.h"
 
-typedef float (Oscillator::*OscFunction)(void);
-typedef float (Oscillator::*DtFunction)(float);
 
 class Oscillator
 {
+    //typedef float (Oscillator::*OscFunction)(void);
+    //typedef float (Oscillator::*DtFunction)(float);
     
     private:
         OscillatorType m_osc;
@@ -14,8 +14,9 @@ class Oscillator
         float m_volume;
         float m_phase;
         float m_phase_dt;
-        OscFunction m_osc_function;
-        DtFunction m_dt_function;
+        //значение типа "float (Oscillator::*)()" нельзя присвоить сущности типа "float (*)()"
+        float (Oscillator::*m_osc_function)(void);
+        float (Oscillator::*m_dt_function)(float freq);
         void sine_osc_phase_incr();
         void saw_osc_phase_incr();
         float calc_saw_phase_delta(float freq);

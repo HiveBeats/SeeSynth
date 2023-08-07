@@ -26,20 +26,20 @@ void Oscillator::SetType(OscillatorType osc)
     m_osc = osc;
     switch (m_osc) {
         case Sine:
-            m_osc_function = &sineosc;
-            m_dt_function = &calc_sine_phase_delta;
+            m_osc_function = &Oscillator::sineosc;
+            m_dt_function = &Oscillator::calc_sine_phase_delta;
             break;
         case Triangle:
-            m_osc_function = &triangleosc;
-            m_dt_function = &calc_saw_phase_delta;
+            m_osc_function = &Oscillator::triangleosc;
+            m_dt_function = &Oscillator::calc_saw_phase_delta;
             break;
         case Square:
-            m_osc_function = &squareosc;
-            m_dt_function = &calc_sine_phase_delta;
+            m_osc_function = &Oscillator::squareosc;
+            m_dt_function = &Oscillator::calc_sine_phase_delta;
             break;
         case Saw:
-            m_osc_function = &sawosc;
-            m_dt_function = &calc_saw_phase_delta;
+            m_osc_function = &Oscillator::sawosc;
+            m_dt_function = &Oscillator::calc_saw_phase_delta;
             break;
     }
 }
@@ -48,12 +48,12 @@ void Oscillator::SetFreq(float freq)
 {
     m_freq = freq;
     m_phase = 0;
-    m_phase_dt = m_dt_function(freq);
+    m_phase_dt = (this->*m_dt_function)(freq);
 }
 
 float Oscillator::GenerateSample(float duration)
 {
-    return m_osc_function() * m_volume;
+    return (this->*m_osc_function)() * m_volume;
 }
 
 void Oscillator::sine_osc_phase_incr() 
