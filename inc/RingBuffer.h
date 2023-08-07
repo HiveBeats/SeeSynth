@@ -18,6 +18,7 @@ public:
     bool IsFull() { return m_is_full; }
     bool IsEmpty() { return m_is_empty; }
     std::size_t GetSize();
+    std::size_t GetCapacity() { return m_size; }
     void Reset();
     void Write(T* data, size_t count);
     bool Read(T* output, size_t count);
