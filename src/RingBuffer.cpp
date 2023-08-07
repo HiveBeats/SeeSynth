@@ -1,4 +1,5 @@
 #include "RingBuffer.h"
+#include "Logger.h"
 
 template <typename T> RingBuffer<T>::RingBuffer(std::size_t size) 
 {
@@ -24,7 +25,7 @@ template <typename T> void RingBuffer<T>::Reset()
 
 template <typename T> void RingBuffer<T>::advance_pointer() 
 {
-    if(m_is_full) {
+    if (m_is_full) {
         m_tail++;
 		if (m_tail == m_size) { 
 			m_tail = 0;
@@ -50,11 +51,10 @@ template <typename T> void RingBuffer<T>::retreat_pointer()
 template <typename T> void RingBuffer<T>::Write(T* data, std::size_t count) 
 {
     if (m_is_full || m_head + count > m_size) {
-        //todo: implement
-        // write_log("[WARN] Trying to overfill the ring buffer: \n\tIsFull:%d\n\tHead:%zu\n\tCount:%zu\n\t", 
-        //     m_is_full,
-        //     m_head, 
-        //     count);
+        write_log("[WARN] Trying to overfill the ring buffer: \n\tIsFull:%d\n\tHead:%zu\n\tCount:%zu\n\t", 
+            m_is_full,
+            m_head, 
+            count);
         return;
     }
     m_is_empty = 0;
@@ -69,8 +69,7 @@ template <typename T> void RingBuffer<T>::Write(T* data, std::size_t count)
 template <typename T> bool RingBuffer<T>::Read(T* output, std::size_t count) 
 {
     if (m_is_empty) {
-        //todo: implement
-        //write_log("[WARN] Trying to read empty buffer");
+        write_log("[WARN] Trying to read empty buffer");
         return 0;
     }
 
@@ -97,11 +96,11 @@ template <typename T> std::size_t RingBuffer<T>::GetSize()
 	return p_size;
 }
 
-template <typename T> void RingBuffer<T>::Print() {
-    //todo: implement
-    // write_log("[INFO] The ring buffer: \n\tIsFull:%d\n\tIsEmpty:%d\n\tHead:%zu\n\tTail:%zu\n\t", 
-    //             me->m_is_full, 
-    //             me->m_is_empty, 
-    //             me->m_head, 
-    //             me->m_tail);
+template <typename T> void RingBuffer<T>::Print() 
+{
+    write_log("[INFO] The ring buffer: \n\tIsFull:%d\n\tIsEmpty:%d\n\tHead:%zu\n\tTail:%zu\n\t", 
+                m_is_full, 
+                m_is_empty, 
+                m_head, 
+                m_tail);
 }
