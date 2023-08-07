@@ -1,10 +1,12 @@
 #include "Adder.h"
+#include "Settings.h"
+#include <numeric>
 
 std::vector<float> & Adder::SumOscillators(const std::vector<Oscillator*> & oscillators, float duration)
 {
     size_t sample_count = (size_t)(duration * SAMPLE_RATE);
 
-    std::vector<float> output = new std::vector<float>();
+    std::vector<float> output;// = new std::vector<float>();
     output.reserve(sample_count);
 
     for (size_t i = 0; i < sample_count; i++) 

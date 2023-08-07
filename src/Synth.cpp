@@ -9,7 +9,8 @@ std::vector<float> & Synth::get_note(int semitone, float beats)
     float duration = beats * BEAT_DURATION;
     
     // will change after oscillator starts to be more autonomous
-    for (auto osc : m_oscillators) {
+    for (Oscillator* osc : m_oscillators) 
+    {
         osc->SetFreq(hz);
     }
 
