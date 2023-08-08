@@ -12,5 +12,5 @@ struct OscillatorGuiState {
 };
 
 struct SynthGuiState {
-    std::vector<OscillatorGuiState> oscillators;
+    std::vector<OscillatorGuiState*> oscillators;
 };

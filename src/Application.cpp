@@ -19,6 +19,10 @@ Application::~Application()
     CloseWindow();
     delete m_ring_buffer;
     delete[] m_temp_buffer;
+    // todo: move to gui state class destructor (make it a class)
+    for(int i = 0; i < m_synth_gui_state.oscillators.size(); i++) {
+        delete m_synth_gui_state.oscillators[i];
+    }
 }
 
 void Application::init_audio() 
@@ -52,7 +56,7 @@ void Application::init_synth()
         Oscillator* osc = oscillators[i];
         assert(osc);
 
-        OscillatorGuiState ui = {
+        OscillatorGuiState* ui = new OscillatorGuiState {
             .freq = osc->GetFreq(),
             .waveshape = osc->GetType(),
             .volume = osc->GetVolume()

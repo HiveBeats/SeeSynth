@@ -1,8 +1,8 @@
 #include "Renderer.h"
-#include "raylib.h"
 #define RAYGUI_IMPLEMENTATION
 #include "raygui.h"
 #include "Settings.h"
+#include "Logger.h"
 
 Renderer::Renderer(/* args */)
 {
@@ -43,7 +43,149 @@ void Renderer::DrawSignal(Synth & synth, const SynthGuiState & synthGui)
     delete[] signal_points;
 }
 
+void Renderer::DrawOscillatorsShapeInputs(const std::vector<Oscillator*>& oscillators, const std::vector<OscillatorGuiState*>& guiOscillators)
+{
+    #define WAVE_SHAPE_OPTIONS "Sine;Triangle;Sawtooth;Square"
+
+    // DRAW OSCILLATOR SHAPE INPUTS
+    for (int i = 0; i < oscillators.size(); i += 1)
+    {
+        OscillatorGuiState* ui_osc = guiOscillators[i];
+        assert(ui_osc);
+
+        Oscillator* osc = oscillators[i];
+        assert(osc);
+
+        // Shape select
+        int shape_index = (int)(ui_osc->waveshape);
+        bool is_dropdown_click = GuiDropdownBox(ui_osc->shape_dropdown_rect, 
+                                                WAVE_SHAPE_OPTIONS, 
+                                                &shape_index, 
+                                                ui_osc->is_dropdown_open
+                                                );
+        
+        if (is_dropdown_click)
+        {
+            write_log("Dropdown clicked!\n");
+            ui_osc->is_dropdown_open = !ui_osc->is_dropdown_open;
+            ui_osc->waveshape = (OscillatorType)(shape_index);
+            // APPLY STATE TO REAL OSC
+            osc->SetType(ui_osc->waveshape);
+        }
+        if (ui_osc->is_dropdown_open) break;
+    }
+}
+
+void Renderer::DrawOscillatorsPanels(const std::vector<Oscillator*>& oscillators, 
+    const std::vector<OscillatorGuiState*>& guiOscillators,
+    const Rectangle& panel_bounds)
+{
+    float panel_y_offset = 0;
+    for (int i = 0; i < oscillators.size(); i++)
+    {
+        OscillatorGuiState* ui_osc = guiOscillators[i];
+        assert(ui_osc);
+
+        Oscillator* osc = oscillators[i];
+        assert(osc);
+
+        const bool has_shape_param = (ui_osc->waveshape == Square);
+        
+        // Draw Oscillator Panel
+        const int osc_panel_width = panel_bounds.width - 20;
+        const int osc_panel_height = has_shape_param ? 130 : 100;
+        const int osc_panel_x = panel_bounds.x + 10;
+        const int osc_panel_y = panel_bounds.y + 50 + panel_y_offset;
+        panel_y_offset += osc_panel_height + 5;
+        GuiPanel((Rectangle){
+                     (float)osc_panel_x,
+                     (float)osc_panel_y,
+                     (float)osc_panel_width,
+                     (float)osc_panel_height
+                 },
+                "");
+        
+        const float slider_padding = 50.f;
+        const float el_spacing = 5.f;
+        Rectangle el_rect = {
+            .x = (float)osc_panel_x + slider_padding + 30,
+            .y = (float)osc_panel_y + 10,
+            .width = (float)osc_panel_width - (slider_padding * 2),
+            .height = 25.f
+        };
+        
+        // Volume slider
+        float decibels = (20.f * log10f(osc->GetVolume()));
+        char amp_slider_label[32];
+        sprintf(amp_slider_label, "%.1f dB", decibels);
+        decibels = GuiSlider(el_rect, 
+                             amp_slider_label, 
+                             "", 
+                             decibels, 
+                             -60.0f, 
+                             0.0f
+                             );
+        ui_osc->volume = powf(10.f, decibels * (1.f/20.f));
+        osc->SetVolume(ui_osc->volume);
+
+        el_rect.y += el_rect.height + el_spacing;
+        
+        // Defer shape drop-down box.
+        ui_osc->shape_dropdown_rect = el_rect;
+        el_rect.y += el_rect.height + el_spacing;
+        /*
+        Rectangle delete_button_rect = el_rect;
+        delete_button_rect.x = osc_panel_x + 5;
+        delete_button_rect.y -= el_rect.height + el_spacing;
+        delete_button_rect.width = 30;
+        bool is_delete_button_pressed = GuiButton(delete_button_rect, "X");
+        if (is_delete_button_pressed)
+        {
+            memmove(
+                    synth->ui_oscillator + ui_osc_i, 
+                    synth->ui_oscillator + ui_osc_i + 1, 
+                    (synth->ui_oscillator_count - ui_osc_i) * sizeof(UiOscillator)
+                    );
+            synth->ui_oscillator_count -= 1;
+        }
+        */
+    }
+    
+}
+
+void Renderer::DrawMainPanel(const Rectangle& panel_bounds)
+{
+    bool is_shape_dropdown_open = false;
+    int shape_index = 0;
+    GuiPanel(panel_bounds, "");
+
+    /**/
+    bool click_add_oscillator = GuiButton((Rectangle){
+                                              panel_bounds.x + 10,
+                                              panel_bounds.y + 10,
+                                              panel_bounds.width - 20,
+                                              25.f
+                                          }, "Add Oscillator");
+    if (click_add_oscillator)
+    {
+        // synth->ui_oscillator_count += 1;
+        // // Set defaults:
+        // UiOscillator *ui_osc = synth->ui_oscillator + (synth->ui_oscillator_count - 1);
+        // ui_osc->shape = WaveShape_SINE;
+        // ui_osc->freq = BASE_NOTE_FREQ;
+        // ui_osc->amplitude_ratio = 0.1f;
+        // ui_osc->shape_parameter_0 = 0.5f;
+    }
+}
+
 void Renderer::DrawUi(Synth & synth, const SynthGuiState & synthGui)
 {
-
+    Rectangle panel_bounds = {.x = 0, .y = 0, .width = OSCILLATOR_PANEL_WIDTH, .height = WINDOW_HEIGHT };
+    DrawMainPanel(panel_bounds);
+    
+    // Draw Oscillators
+    std::vector<Oscillator*> oscillators = synth.GetOscillators();
+    std::vector<OscillatorGuiState*> guiOscillators = synthGui.oscillators;
+    DrawOscillatorsPanels(oscillators, guiOscillators, panel_bounds);
+    DrawOscillatorsShapeInputs(oscillators, guiOscillators);
 }
