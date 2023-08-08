@@ -1,28 +1,23 @@
 #include "Oscillator.h"
 #include "Settings.h"
 
-#define TWO_PI 2*SYNTH_PI
+#define TWO_PI 2 * SYNTH_PI
 
-Oscillator::Oscillator(OscillatorType osc, float freq, float volume)
-{
+Oscillator::Oscillator(OscillatorType osc, float freq, float volume) {
     SetType(osc);
     m_freq = freq;
     m_volume = volume;
 }
 
-Oscillator::~Oscillator()
-{
-}
+Oscillator::~Oscillator() {}
 
-void Oscillator::Reset()
-{
+void Oscillator::Reset() {
     m_volume = 0;
     m_phase = 0;
     m_phase_dt = 0;
 }
 
-void Oscillator::SetType(OscillatorType osc)
-{
+void Oscillator::SetType(OscillatorType osc) {
     m_osc = osc;
     switch (m_osc) {
         case Sine:
@@ -44,68 +39,53 @@ void Oscillator::SetType(OscillatorType osc)
     }
 }
 
-void Oscillator::SetFreq(float freq)
-{
+void Oscillator::SetFreq(float freq) {
     m_freq = freq;
     m_phase = 0;
     m_phase_dt = (this->*m_dt_function)(freq);
 }
 
-float Oscillator::GenerateSample(float duration)
-{
+float Oscillator::GenerateSample(float duration) {
     return (this->*m_osc_function)() * m_volume;
 }
 
-void Oscillator::sine_osc_phase_incr() 
-{
+void Oscillator::sine_osc_phase_incr() {
     m_phase += m_phase_dt;
     if (m_phase >= TWO_PI)
         m_phase -= TWO_PI;
 }
 
-void Oscillator::saw_osc_phase_incr() 
-{
+void Oscillator::saw_osc_phase_incr() {
     m_phase += m_phase_dt;
     if (m_phase >= 1.0f)
         m_phase -= 1.0f;
 }
 
-float Oscillator::calc_saw_phase_delta(float freq) 
-{
+float Oscillator::calc_saw_phase_delta(float freq) {
     return freq / SAMPLE_RATE;
 }
 
-float Oscillator::calc_sine_phase_delta(float freq) 
-{
+float Oscillator::calc_sine_phase_delta(float freq) {
     return (TWO_PI * freq) / SAMPLE_RATE;
 }
 
-float Oscillator::sineosc() 
-{
+float Oscillator::sineosc() {
     float result = sinf(m_phase);
     sine_osc_phase_incr();
     return result;
 }
 
-float Oscillator::sign(float v) 
-{
-    return (v > 0.0) ? 1.f : -1.f;
-}
+float Oscillator::sign(float v) { return (v > 0.0) ? 1.f : -1.f; }
 
-float Oscillator::squareosc() 
-{
-    return sign(sineosc());
-}
+float Oscillator::squareosc() { return sign(sineosc()); }
 
-float Oscillator::triangleosc() 
-{
+float Oscillator::triangleosc() {
     float result = 1.f - fabsf(m_phase - 0.5f) * 4.f;
     saw_osc_phase_incr();
     return result;
 }
 
-float Oscillator::sawosc() 
-{
+float Oscillator::sawosc() {
     float result = m_phase * 2.f - 1.f;
     saw_osc_phase_incr();
     return result;

@@ -1,14 +1,13 @@
 #pragma once
 #include "Note.h"
-#include "Synth.h"
-#include "raylib.h"
-#include "RingBuffer.h"
 #include "Renderer.h"
+#include "RingBuffer.h"
+#include "Synth.h"
 #include "SynthGuiState.h"
+#include "raylib.h"
 
-class Application
-{
-private:
+class Application {
+  private:
     Synth m_synth;
     SynthGuiState m_synth_gui_state;
     RingBuffer<float>* m_ring_buffer;
@@ -24,9 +23,8 @@ private:
     void play_buffered_audio();
     void fill_audio_buffer();
 
-public:
+  public:
     Application(/* args */);
     ~Application();
     void Run();
 };
-

@@ -1,22 +1,23 @@
 #pragma once
 #include "Settings.h"
 #include <cmath>
-#include <cstring>
 #include <cstdlib>
+#include <cstring>
 #include <string>
 
-class KeyBoard
-{
-private:
+class KeyBoard {
+  private:
     /* data */
-    static int get_semitone_shift_internal(const char* root_note, char* target_note) {
-        const char* pitch_classes[12] =
-            { "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B" };
+    static int get_semitone_shift_internal(const char* root_note,
+                                           char* target_note) {
+        const char* pitch_classes[12] = {"C",  "C#", "D",  "D#", "E",  "F",
+                                         "F#", "G",  "G#", "A",  "A#", "B"};
 
         // Extract the note number and pitch class for the root note
         int root_note_num = (int)root_note[strlen(root_note) - 1] - '0';
 
-        char* root_pitch_class_str = (char*)malloc((strlen(root_note) - 1) * sizeof(char));
+        char* root_pitch_class_str =
+            (char*)malloc((strlen(root_note) - 1) * sizeof(char));
         strncpy(root_pitch_class_str, root_note, strlen(root_note) - 1);
 
         int root_pitch_class = -1;
@@ -50,11 +51,12 @@ private:
 
         // Calculate the semitone shift using the formula
         return (target_note_num - root_note_num) * 12 +
-            (target_pitch_class - root_pitch_class);
+               (target_pitch_class - root_pitch_class);
     }
-public:
+
+  public:
     KeyBoard(/* args */);
-    ~KeyBoard(); 
+    ~KeyBoard();
 
     static float GetHzBySemitone(int semitone) {
         return PITCH_STANDARD * powf(powf(2.f, (1.f / 12.f)), semitone);
@@ -63,18 +65,14 @@ public:
     static int GetSemitoneShift(const std::string& target_note) {
         char* target_note_cstr = new char[target_note.length() + 1];
         strcpy(target_note_cstr, target_note.c_str());
-        
+
         int result = get_semitone_shift_internal("A4", target_note_cstr);
-        
+
         delete[] target_note_cstr;
         return result;
     }
 };
 
-KeyBoard::KeyBoard(/* args */)
-{
-}
+KeyBoard::KeyBoard(/* args */) {}
 
-KeyBoard::~KeyBoard()
-{
-}
+KeyBoard::~KeyBoard() {}

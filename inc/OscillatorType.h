@@ -1,7 +1,2 @@
 #pragma once
-typedef enum {
-    Sine,
-    Triangle,
-    Saw,
-    Square
-} OscillatorType;
+typedef enum { Sine, Triangle, Saw, Square } OscillatorType;
