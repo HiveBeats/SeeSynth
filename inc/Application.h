@@ -4,10 +4,13 @@
 #include "raylib.h"
 #include "RingBuffer.h"
 #include "Renderer.h"
+#include "SynthGuiState.h"
+
 class Application
 {
 private:
     Synth m_synth;
+    SynthGuiState m_synth_gui_state;
     RingBuffer<float>* m_ring_buffer;
     AudioStream m_synth_stream;
     int m_sound_played_count;

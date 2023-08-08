@@ -45,16 +45,20 @@ void Application::init_synth()
     };
 
     //todo: move somewhere in initialization
-    // synth.ui_oscillators = malloc(sizeof(OscillatorUI) * synth.oscillators.count);
-    // for (size_t i = 0; i < synth.oscillators.count; i++)
-    // {
-    //     OscillatorUI* ui = &synth.ui_oscillators[i];
-    //     assert(ui);
+    std::vector<Oscillator*> oscillators = m_synth.GetOscillators();
+    m_synth_gui_state.oscillators.reserve(oscillators.size());
+    for (size_t i = 0; i < oscillators.size(); i++)
+    {
+        Oscillator* osc = oscillators[i];
+        assert(osc);
 
-    //     ui->freq = synth.oscillators.array[i].freq;
-    //     ui->waveshape = synth.oscillators.array[i].osc;
-    //     ui->volume = synth.oscillators.array[i].volume;
-    // }
+        OscillatorGuiState ui = {
+            .freq = osc->GetFreq(),
+            .waveshape = osc->GetType(),
+            .volume = osc->GetVolume()
+        };
+        m_synth_gui_state.oscillators.push_back(ui);
+    }
 }
 
 std::size_t Application::detect_note_pressed(Note* note) 
@@ -171,6 +175,6 @@ void Application::Run()
         play_buffered_audio();
         update_on_note_input();
 
-        m_renderer.Draw();
+        m_renderer.Draw(m_synth, m_synth_gui_state);
     }
 }

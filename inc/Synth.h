@@ -21,4 +21,5 @@ public:
     ~Synth();
     void ProduceNoteSound(Note input);
     const std::vector<float> & GetOutSignal() { return m_out_signal; }
+    const std::vector<Oscillator*>& GetOscillators() { return m_oscillators; }
 };
