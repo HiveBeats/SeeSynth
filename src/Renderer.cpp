@@ -11,20 +11,20 @@ Renderer::Renderer(/* args */) {
 
 Renderer::~Renderer() {}
 
-void Renderer::Draw(Synth& synth, SynthGuiState& synthGui) {
+void Renderer::Draw(Synth& synth, SynthGuiState& synth_gui) {
     BeginDrawing();
 
     ClearBackground(RAYWHITE);
     // todo: implement renderer
-    DrawUi(synth, synthGui);
-    DrawSignal(synth, synthGui);
+    draw_ui(synth, synth_gui);
+    draw_signal(synth, synth_gui);
     // DrawText("Congrats! You created your first window!", 190, 200, 20,
     // LIGHTGRAY); DrawFPS(0,0);
 
     EndDrawing();
 }
 
-void Renderer::DrawSignal(Synth& synth, SynthGuiState& synthGui) {
+void Renderer::draw_signal(Synth& synth, SynthGuiState& synth_gui) {
     GuiGrid((Rectangle){0, 0, WINDOW_WIDTH, WINDOW_HEIGHT}, "",
             WINDOW_HEIGHT / 8, 2);
     auto signal = synth.GetOutSignal();
@@ -39,14 +39,14 @@ void Renderer::DrawSignal(Synth& synth, SynthGuiState& synthGui) {
     delete[] signal_points;
 }
 
-void Renderer::DrawOscillatorsShapeInputs(
+void Renderer::draw_oscillators_shape_inputs(
     const std::vector<Oscillator*>& oscillators,
-    const std::vector<OscillatorGuiState*>& guiOscillators) {
+    const std::vector<OscillatorGuiState*>& gui_oscillators) {
 #define WAVE_SHAPE_OPTIONS "Sine;Triangle;Sawtooth;Square"
 
     // DRAW OSCILLATOR SHAPE INPUTS
     for (int i = 0; i < oscillators.size(); i += 1) {
-        OscillatorGuiState* ui_osc = guiOscillators[i];
+        OscillatorGuiState* ui_osc = gui_oscillators[i];
         assert(ui_osc);
 
         Oscillator* osc = oscillators[i];
@@ -70,13 +70,13 @@ void Renderer::DrawOscillatorsShapeInputs(
     }
 }
 
-void Renderer::DrawOscillatorsPanels(
+void Renderer::draw_oscillators_panels(
     const std::vector<Oscillator*>& oscillators,
-    const std::vector<OscillatorGuiState*>& guiOscillators,
+    const std::vector<OscillatorGuiState*>& gui_oscillators,
     const Rectangle& panel_bounds) {
     float panel_y_offset = 0;
     for (int i = 0; i < oscillators.size(); i++) {
-        OscillatorGuiState* ui_osc = guiOscillators[i];
+        OscillatorGuiState* ui_osc = gui_oscillators[i];
         assert(ui_osc);
 
         Oscillator* osc = oscillators[i];
@@ -136,13 +136,13 @@ void Renderer::DrawOscillatorsPanels(
     }
 }
 
-void Renderer::DrawMainPanel(const Rectangle& panel_bounds) {
+void Renderer::draw_main_panel(const Rectangle& panel_bounds) {
     bool is_shape_dropdown_open = false;
     int shape_index = 0;
     GuiPanel(panel_bounds, "");
 }
 
-void Renderer::DrawAddOscillatorButton(Synth& synth, SynthGuiState& synthGui,
+void Renderer::draw_add_oscillator_button(Synth& synth, SynthGuiState& synth_gui,
                                        Rectangle panel_bounds) {
     //clang-format off
     bool click_add_oscillator =
@@ -159,21 +159,21 @@ void Renderer::DrawAddOscillatorButton(Synth& synth, SynthGuiState& synthGui,
             new OscillatorGuiState{.freq = osc->GetFreq(),
                                    .waveshape = osc->GetType(),
                                    .volume = osc->GetVolume()};
-        synthGui.oscillators.push_back(ui);
+        synth_gui.oscillators.push_back(ui);
     }
 }
 
-void Renderer::DrawUi(Synth& synth, SynthGuiState& synthGui) {
+void Renderer::draw_ui(Synth& synth, SynthGuiState& synth_gui) {
     Rectangle panel_bounds = {.x = 0,
                               .y = 0,
                               .width = OSCILLATOR_PANEL_WIDTH,
                               .height = WINDOW_HEIGHT};
-    DrawMainPanel(panel_bounds);
-    DrawAddOscillatorButton(synth, synthGui, panel_bounds);
+    draw_main_panel(panel_bounds);
+    draw_add_oscillator_button(synth, synth_gui, panel_bounds);
     // Draw Oscillators
     std::vector<Oscillator*> oscillators = synth.GetOscillators();
-    std::vector<OscillatorGuiState*> guiOscillators = synthGui.oscillators;
+    std::vector<OscillatorGuiState*> gui_oscillators = synth_gui.oscillators;
 
-    DrawOscillatorsPanels(oscillators, guiOscillators, panel_bounds);
-    DrawOscillatorsShapeInputs(oscillators, guiOscillators);
+    draw_oscillators_panels(oscillators, gui_oscillators, panel_bounds);
+    draw_oscillators_shape_inputs(oscillators, gui_oscillators);
 }
