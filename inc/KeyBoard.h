@@ -66,7 +66,7 @@ public:
         
         int result = get_semitone_shift_internal("A4", target_note_cstr);
         
-        delete target_note_cstr;
+        delete[] target_note_cstr;
         return result;
     }
 };

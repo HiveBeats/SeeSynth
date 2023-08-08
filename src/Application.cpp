@@ -13,8 +13,12 @@ Application::Application(/* args */)
 
 Application::~Application()
 {
+    StopAudioStream(m_synth_stream);
+    UnloadAudioStream(m_synth_stream);    
+    CloseAudioDevice();
+    CloseWindow();
     delete m_ring_buffer;
-    delete m_temp_buffer;
+    delete[] m_temp_buffer;
 }
 
 void Application::init_audio() 
@@ -102,7 +106,7 @@ void Application::update_on_note_input()
     {
         m_synth.ProduceNoteSound((*m_current_note));
         m_sound_played_count = 0;
-        write_log("Note played: %s\n", m_current_note->name);
+        write_log("Note played: %s\n", m_current_note->name.c_str());
     }
 }
 
@@ -166,7 +170,7 @@ void Application::Run()
         fill_audio_buffer();
         play_buffered_audio();
         update_on_note_input();
-        
+
         m_renderer.Draw();
     }
 }

@@ -1,3 +1,3 @@
 #!/bin/bash
-CC="${CXX:-cc}"
-$CC -Wall -std=c11 ./main.c ./utils.c ./ring_buffer.c ./oscillator.c ./parser.c ./export.c -lm -lraylib -o ./bin/main
+CC="clang++"
+$CC -std=c++17 -I./inc/ ./src/SeeSynth.cpp ./src/Application.cpp ./src/Renderer.cpp ./src/Synth.cpp ./src/Oscillator.cpp -lm -lraylib -o ./bin/main

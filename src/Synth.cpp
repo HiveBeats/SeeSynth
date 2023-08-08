@@ -3,6 +3,15 @@
 #include "KeyBoard.h"
 #include "OscillatorType.h"
 
+Synth::Synth(/* args */)
+{
+    m_oscillators.push_back(new Oscillator(OscillatorType::Sine, 440.f, VOLUME));
+}
+
+Synth::~Synth()
+{
+}
+
 std::vector<float> & Synth::get_note(int semitone, float beats) 
 {
     float hz = KeyBoard::GetHzBySemitone(semitone);
