@@ -1,3 +1,5 @@
 #!/bin/bash
-CC="${CXX:-cc}"
-$CC -Wall -std=c11 ./main.c ./utils.c ./ring_buffer.c ./oscillator.c ./parser.c ./export.c -lm -lraylib -o ./bin/main
+CC="${CXX:-c++}"
+LL="-lm -lraylib"
+FLAGS="-Wall -std=c++17 -I./inc/"
+$CC $FLAGS $(find ./src -type f -iregex ".*\.cpp") $LL -o ./bin/main
