@@ -5,7 +5,7 @@
 
 Synth::Synth(/* args */)
 {
-    m_oscillators.push_back(new Oscillator(OscillatorType::Sine, 440.f, VOLUME));
+    AddOscillator();
 }
 
 Synth::~Synth()
@@ -26,8 +26,14 @@ std::vector<float> & Synth::get_note(int semitone, float beats)
     return m_adder.SumOscillators(m_oscillators, duration); //todo: add other pipeline steps (e.g ADSR, Filters, FX);
 }
 
-void Synth::ProduceNoteSound(Note input) {
+void Synth::ProduceNoteSound(Note input) 
+{
     float length = 1.f / input.length;
     int semitone_shift = KeyBoard::GetSemitoneShift(input.name);
     m_out_signal = get_note(semitone_shift, length);
+}
+
+void Synth::AddOscillator()
+{
+    m_oscillators.push_back(new Oscillator(OscillatorType::Sine, 440.f, VOLUME));
 }

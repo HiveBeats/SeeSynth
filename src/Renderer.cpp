@@ -14,7 +14,7 @@ Renderer::~Renderer()
 {
 }
 
-void Renderer::Draw(Synth& synth, const SynthGuiState& synthGui)
+void Renderer::Draw(Synth& synth, SynthGuiState& synthGui)
 {
     BeginDrawing();
 
@@ -28,7 +28,7 @@ void Renderer::Draw(Synth& synth, const SynthGuiState& synthGui)
     EndDrawing();
 }
 
-void Renderer::DrawSignal(Synth & synth, const SynthGuiState & synthGui) 
+void Renderer::DrawSignal(Synth & synth, SynthGuiState & synthGui) 
 {
     GuiGrid((Rectangle){0, 0, WINDOW_WIDTH, WINDOW_HEIGHT}, "", WINDOW_HEIGHT / 8, 2);
     auto signal = synth.GetOutSignal();
@@ -158,8 +158,10 @@ void Renderer::DrawMainPanel(const Rectangle& panel_bounds)
     bool is_shape_dropdown_open = false;
     int shape_index = 0;
     GuiPanel(panel_bounds, "");
+}
 
-    /**/
+void Renderer::DrawAddOscillatorButton(Synth & synth, SynthGuiState & synthGui, Rectangle panel_bounds)
+{
     bool click_add_oscillator = GuiButton((Rectangle){
                                               panel_bounds.x + 10,
                                               panel_bounds.y + 10,
@@ -168,24 +170,27 @@ void Renderer::DrawMainPanel(const Rectangle& panel_bounds)
                                           }, "Add Oscillator");
     if (click_add_oscillator)
     {
-        // synth->ui_oscillator_count += 1;
-        // // Set defaults:
-        // UiOscillator *ui_osc = synth->ui_oscillator + (synth->ui_oscillator_count - 1);
-        // ui_osc->shape = WaveShape_SINE;
-        // ui_osc->freq = BASE_NOTE_FREQ;
-        // ui_osc->amplitude_ratio = 0.1f;
-        // ui_osc->shape_parameter_0 = 0.5f;
-    }
-}
+        synth.AddOscillator();
+        Oscillator* osc = synth.GetOscillators().back();
 
-void Renderer::DrawUi(Synth & synth, const SynthGuiState & synthGui)
+        OscillatorGuiState* ui = new OscillatorGuiState {
+            .freq = osc->GetFreq(),
+            .waveshape = osc->GetType(),
+            .volume = osc->GetVolume()
+        };
+        synthGui.oscillators.push_back(ui);
+    }
+} 
+
+void Renderer::DrawUi(Synth & synth, SynthGuiState & synthGui)
 {
     Rectangle panel_bounds = {.x = 0, .y = 0, .width = OSCILLATOR_PANEL_WIDTH, .height = WINDOW_HEIGHT };
     DrawMainPanel(panel_bounds);
-    
+    DrawAddOscillatorButton(synth, synthGui, panel_bounds);
     // Draw Oscillators
     std::vector<Oscillator*> oscillators = synth.GetOscillators();
     std::vector<OscillatorGuiState*> guiOscillators = synthGui.oscillators;
+
     DrawOscillatorsPanels(oscillators, guiOscillators, panel_bounds);
     DrawOscillatorsShapeInputs(oscillators, guiOscillators);
 }
