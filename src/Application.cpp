@@ -39,7 +39,7 @@ void Application::init_synth() {
     // todo: move that variables to Synth declaration
     std::string* nameString = new std::string(std::string(new char[3]));
     m_current_note = new Note{.length = 1, .name = (*nameString)};
-
+    m_current_note->name.assign("G4");
     // todo: move somewhere in initialization
     std::vector<Oscillator*> oscillators = m_synth.GetOscillators();
     m_synth_gui_state.oscillators.reserve(oscillators.size());
@@ -91,55 +91,61 @@ std::size_t Application::detect_note_pressed(Note* note) {
 
 // Update On Input
 void Application::update_on_note_input() {
-    if (detect_note_pressed(m_current_note)) {
+    detect_note_pressed(m_current_note);
+    // if (detect_note_pressed(m_current_note)) {
         m_synth.ProduceNoteSound((*m_current_note));
-        m_sound_played_count = 0;
+        //m_sound_played_count = 0;
         write_log("Note played: %s\n", m_current_note->name.c_str());
-    }
+    //}
 }
 
 // Play ring-buffered audio
 void Application::play_buffered_audio() {
-    if (IsAudioStreamProcessed(m_synth_stream) && !m_ring_buffer->IsEmpty()) {
-        std::size_t size_to_read = m_ring_buffer->GetSize();
-
+    std::size_t size_to_read = m_ring_buffer->GetSize();
+    size_t sample_count = (size_t)(1.f/FPS * SAMPLE_RATE);
+    if (IsAudioStreamProcessed(m_synth_stream)) {
         write_log("Samples to play:%zu \n", size_to_read);
         // todo: try to start reading directly from ring buffer, avoiding
         // temp_buffer
-        m_ring_buffer->Read(m_temp_buffer, size_to_read);
+        //todo: can be optimized to only move pointers, without the usage of temp buffer
+        
         // can try the SetAudioStreamCallback
-        UpdateAudioStream(m_synth_stream, m_temp_buffer, size_to_read);
+        UpdateAudioStream(m_synth_stream, m_temp_buffer, sample_count);
         // can overwrite the ring buffer to avoid that
-        if (m_synth.GetOutSignal().size() == m_sound_played_count) {
-            m_ring_buffer->Reset();
-        }
+        
+        // if (m_synth.GetOutSignal().size() == m_sound_played_count) {
+        //     m_ring_buffer->Reset();
+        // }
+    }
+    m_ring_buffer->Read(m_temp_buffer, sample_count);
+    m_ring_buffer->Reset();
+    if (m_ring_buffer->IsFull() || m_ring_buffer->IsEmpty()) {
     }
 }
 
 // Fill ring buffer from current sound
 void Application::fill_audio_buffer() {
-    if (!m_ring_buffer->IsFull() &&
+    if (!m_ring_buffer->IsFull() && 
         m_synth.GetOutSignal().size() != m_sound_played_count) {
         write_log("[INFO] IsFull:%d Samples:%zu Played:%d\n",
                   m_ring_buffer->IsFull(), m_synth.GetOutSignal().size(),
                   m_sound_played_count);
 
         // how many samples need write
-        std::size_t size_to_fill = 0;
-
-        if ((m_synth.GetOutSignal().size() - m_sound_played_count) >
-            m_ring_buffer->GetCapacity()) {
-            size_to_fill = m_ring_buffer->GetCapacity();
-        } else {
-            size_to_fill = m_synth.GetOutSignal().size() - m_sound_played_count;
-        }
+        std::size_t size_to_fill = m_ring_buffer->GetCapacity() - m_synth.GetOutSignal().size();
+        // if ((m_synth.GetOutSignal().size() - m_sound_played_count) >
+        //     m_ring_buffer->GetCapacity()) {
+            
+        // } else {
+        //     size_to_fill = m_synth.GetOutSignal().size() - m_sound_played_count;
+        // }
 
         write_log("[INFO] SizeToFill:%zu\n", size_to_fill);
-        for (size_t i = 0; i < size_to_fill; i++) {
-            m_temp_buffer[i] = m_synth.GetOutSignal()[i];
-        }
+        // for (size_t i = 0; i < size_to_fill; i++) {
+        //     m_temp_buffer[i] = m_synth.GetOutSignal()[i];
+        // }
 
-        m_ring_buffer->Write(m_temp_buffer, size_to_fill);
+        m_ring_buffer->Write((float*)m_synth.GetOutSignal().data(), size_to_fill);
         m_sound_played_count += size_to_fill;
     }
 }

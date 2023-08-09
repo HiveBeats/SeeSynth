@@ -3,7 +3,7 @@
 #include "Logger.h"
 
 ADSR::ADSR(/* args */) {
-    m_parameters.attack_time = 0.025f;
+    m_parameters.attack_time = 1.f;
     m_parameters.decay_time = 0.3f;
     m_parameters.sustain_level = 0.6f;
     m_parameters.release_time = 1.0f;
@@ -35,7 +35,7 @@ void ADSR::process_sample(float* sample, std::size_t attack_samples,
 
     set_state(attack_samples, decay_samples, release_samples);
     if (m_state == Attack) {
-        (*sample) = (float)(1.f / attack_samples) * m_counter;
+        (*sample) = (*sample) * ((float)(1.f / attack_samples) * m_counter);
     } else if (m_state == Decay) {
     }
     m_counter++;

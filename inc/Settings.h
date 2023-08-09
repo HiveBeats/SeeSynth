@@ -6,7 +6,8 @@
 #define PITCH_STANDARD 440.f
 #define VOLUME 0.5f
 #define ATTACK_MS 100.f
-#define STREAM_BUFFER_SIZE 4096
+#define STREAM_BUFFER_SIZE 1024
+#define FPS 60
 
 #define SYNTH_PI 3.1415926535f
 #define SYNTH_VOLUME 0.5f

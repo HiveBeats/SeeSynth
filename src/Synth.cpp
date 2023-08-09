@@ -31,7 +31,7 @@ std::vector<float>& Synth::get_note(int semitone, float beats) {
 void Synth::apply_effects() {
     for (Effect* effect : m_effects) {
         // maybe not here
-        effect->RetriggerState();
+        //effect->RetriggerState();
         effect->Process(m_out_signal);
     }
 }

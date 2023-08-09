@@ -6,7 +6,7 @@
 
 Renderer::Renderer(/* args */) {
     InitWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "SeeSynth - v0.2");
-    SetTargetFPS(60);
+    SetTargetFPS(FPS);
 }
 
 Renderer::~Renderer() {}

@@ -9,7 +9,7 @@ struct Adder {
     static std::vector<float>&
     SumOscillators(const std::vector<Oscillator*>& oscillators,
                    float duration) {
-        size_t sample_count = (size_t)(duration * SAMPLE_RATE);
+        size_t sample_count = (size_t)(1.f/FPS * SAMPLE_RATE);
 
         std::vector<float>* output = new std::vector<float>();
         output->reserve(sample_count);
