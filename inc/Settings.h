@@ -1,6 +1,6 @@
 #pragma once
 
-#define SAMPLE_RATE 48000.f
+#define SAMPLE_RATE 44100.f
 #define BPM 120.f
 #define BEAT_DURATION 60.f/BPM
 #define PITCH_STANDARD 440.f

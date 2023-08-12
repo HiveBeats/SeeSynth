@@ -15,13 +15,14 @@ class Synth {
     // OscillatorUI* ui_oscillators;
     // Note m_current_note;
     std::vector<float> m_out_signal;
-    std::vector<float>& get_note(int semitone, float beats);
+    void get_note(int semitone, float beats);
     void apply_effects();
 
   public:
     Synth(/* args */);
     ~Synth();
     void ProduceNoteSound(Note input);
+    void StopNoteSound();
     void AddOscillator();
     void AddEffect(Effect* fx);
     const std::vector<float>& GetOutSignal() { return m_out_signal; }

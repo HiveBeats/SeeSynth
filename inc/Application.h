@@ -16,7 +16,7 @@ class Application {
     float* m_temp_buffer;
     Note* m_current_note;
     Renderer m_renderer;
-    std::size_t detect_note_pressed(Note* note);
+    bool detect_note_pressed(Note* note);
     void init_synth();
     void init_audio();
     void update_on_note_input();

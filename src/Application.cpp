@@ -55,72 +55,82 @@ void Application::init_synth() {
     }
 }
 
-std::size_t Application::detect_note_pressed(Note* note) {
+bool Application::detect_note_pressed(Note* note) {
     std::size_t is_pressed = 0;
     note->length = 8;
-    if (IsKeyPressed(KEY_A)) {
+    if (IsKeyDown(KEY_A)) {
         note->name.assign("A4");
         is_pressed = 1;
     }
-    if (IsKeyPressed(KEY_B)) {
+    if (IsKeyDown(KEY_B)) {
         note->name.assign("B4");
         is_pressed = 1;
     }
-    if (IsKeyPressed(KEY_C)) {
-        note->name.assign("C4");
+    if (IsKeyDown(KEY_C)) {
+        note->name.assign("C5");
         is_pressed = 1;
     }
-    if (IsKeyPressed(KEY_D)) {
-        note->name.assign("D4");
+    if (IsKeyDown(KEY_D)) {
+        note->name.assign("D5");
         is_pressed = 1;
     }
-    if (IsKeyPressed(KEY_E)) {
-        note->name.assign("E4");
+    if (IsKeyDown(KEY_E)) {
+        note->name.assign("E5");
         is_pressed = 1;
     }
-    if (IsKeyPressed(KEY_F)) {
-        note->name.assign("F4");
+    if (IsKeyDown(KEY_F)) {
+        note->name.assign("F5");
         is_pressed = 1;
     }
-    if (IsKeyPressed(KEY_G)) {
-        note->name.assign("G4");
+    if (IsKeyDown(KEY_G)) {
+        note->name.assign("G5");
         is_pressed = 1;
     }
-    return is_pressed;
+    return is_pressed == 1;
 }
 
 // Update On Input
 void Application::update_on_note_input() {
-    detect_note_pressed(m_current_note);
-    // if (detect_note_pressed(m_current_note)) {
+    if (detect_note_pressed(m_current_note)) {
+        // if (detect_note_pressed(m_current_note)) {
         m_synth.ProduceNoteSound((*m_current_note));
         //m_sound_played_count = 0;
         write_log("Note played: %s\n", m_current_note->name.c_str());
-    //}
+        //}
+    }
+    else {
+        m_synth.StopNoteSound();
+    }
+    
 }
 
 // Play ring-buffered audio
 void Application::play_buffered_audio() {
-    std::size_t size_to_read = m_ring_buffer->GetSize();
-    size_t sample_count = (size_t)(1.f/FPS * SAMPLE_RATE);
+    //std::size_t size_to_read = m_ring_buffer->GetSize();
+    size_t sample_count = STREAM_BUFFER_SIZE;//(size_t)(1.f/FPS * SAMPLE_RATE);
     if (IsAudioStreamProcessed(m_synth_stream)) {
-        write_log("Samples to play:%zu \n", size_to_read);
+        //write_log("Samples to play:%zu \n", size_to_read);
         // todo: try to start reading directly from ring buffer, avoiding
         // temp_buffer
         //todo: can be optimized to only move pointers, without the usage of temp buffer
-        
+        //m_synth.ProduceNoteSound((*m_current_note));
         // can try the SetAudioStreamCallback
-        UpdateAudioStream(m_synth_stream, m_temp_buffer, sample_count);
+        const float audio_frame_start_time = GetTime();
+        update_on_note_input();
+        UpdateAudioStream(m_synth_stream, m_synth.GetOutSignal().data(), sample_count);
         // can overwrite the ring buffer to avoid that
+        const float audio_freme_duration = GetTime() - audio_frame_start_time;
+        write_log("Frame time: %.3f%% \n", 100.0f / ((1.0f / audio_freme_duration) / ((float)SAMPLE_RATE/STREAM_BUFFER_SIZE)));
+
         
         // if (m_synth.GetOutSignal().size() == m_sound_played_count) {
         //     m_ring_buffer->Reset();
         // }
     }
-    m_ring_buffer->Read(m_temp_buffer, sample_count);
-    m_ring_buffer->Reset();
-    if (m_ring_buffer->IsFull() || m_ring_buffer->IsEmpty()) {
-    }
+    //m_ring_buffer->Read(m_temp_buffer, sample_count);
+    //m_ring_buffer->Reset();
+    //if (m_ring_buffer->IsFull() || m_ring_buffer->IsEmpty()) {
+    //}
 }
 
 // Fill ring buffer from current sound
@@ -154,9 +164,9 @@ void Application::Run() {
     // Main game loop
     while (!WindowShouldClose()) // Detect window close button or ESC key
     {
-        fill_audio_buffer();
+        //fill_audio_buffer();
+        //update_on_note_input();
         play_buffered_audio();
-        update_on_note_input();
 
         m_renderer.Draw(m_synth, m_synth_gui_state);
     }
