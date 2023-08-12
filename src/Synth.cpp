@@ -19,17 +19,10 @@ Synth::~Synth() {
     m_out_signal.clear();
 }
 
-void Synth::get_note(int semitone, float beats) {
+void Synth::get_note() {
     for (size_t i = 0; i < STREAM_BUFFER_SIZE; i++) {
         float sample = 0.0f;
         m_out_signal[i] = sample;
-    }
-
-    float hz = KeyBoard::GetHzBySemitone(semitone);
-
-    // will change after oscillator starts to be more autonomous
-    for (Oscillator* osc : m_oscillators) {
-        osc->SetFreq(hz);
     }
 
     // todo: add other pipeline steps (e.g ADSR, Filters, FX);
@@ -44,18 +37,29 @@ void Synth::apply_effects() {
     }
 }
 
-void Synth::ProduceNoteSound(Note input) {
+void Synth::TriggerNote(Note input) {
     float length = 1.f / input.length;
     int semitone_shift = KeyBoard::GetSemitoneShift(input.name);
-    get_note(semitone_shift, length);
+    float hz = KeyBoard::GetHzBySemitone(semitone_shift);
+
+    // will change after oscillator starts to be more autonomous
+    for (Oscillator* osc : m_oscillators) {
+        osc->SetFreq(hz);
+    }
+    is_note_triggered = true;
+}
+
+void Synth::ProduceSound() {
+    get_note();
     apply_effects();
 }
 
-void Synth::StopNoteSound() {
+void Synth::StopSound() {
     for (size_t i = 0; i < STREAM_BUFFER_SIZE; i++) {
         float sample = 0.0f;
         m_out_signal[i] = sample;
     }
+    is_note_triggered = false;
 }
 
 void Synth::AddOscillator() {

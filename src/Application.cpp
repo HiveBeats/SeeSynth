@@ -93,13 +93,16 @@ bool Application::detect_note_pressed(Note* note) {
 void Application::update_on_note_input() {
     if (detect_note_pressed(m_current_note)) {
         // if (detect_note_pressed(m_current_note)) {
-        m_synth.ProduceNoteSound((*m_current_note));
+        if (!m_synth.GetIsNoteTriggered()){
+            m_synth.TriggerNote((*m_current_note));
+        }
+        m_synth.ProduceSound();
         //m_sound_played_count = 0;
         write_log("Note played: %s\n", m_current_note->name.c_str());
         //}
     }
     else {
-        m_synth.StopNoteSound();
+        m_synth.StopSound();
     }
     
 }
