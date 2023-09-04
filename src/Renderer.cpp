@@ -141,8 +141,6 @@ void Renderer::draw_oscillators_panels(
 }
 
 void Renderer::draw_main_panel(const Rectangle& panel_bounds) {
-    bool is_shape_dropdown_open = false;
-    int shape_index = 0;
     GuiPanel(panel_bounds, "");
 }
 
