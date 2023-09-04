@@ -4,7 +4,7 @@
 
 ADSR::ADSR(/* args */) {
     m_parameters.attack_time = 1.f;
-    m_parameters.decay_time = 0.3f;
+    m_parameters.decay_time = 0.4f;
     m_parameters.sustain_level = 0.6f;
     m_parameters.release_time = 0.8f;
     m_ramp = new Ramp(0, SAMPLE_RATE);
@@ -33,9 +33,6 @@ bool ADSR::is_release_elapsed() {
 void ADSR::recheck_state() {
     switch (m_state)
     {
-    case Off:
-        m_state = Attack;
-        break;
     case Attack:
         if (is_attack_elapsed()) {
             m_state = Decay;
@@ -76,6 +73,7 @@ void ADSR::process_sample(float* sample) {
 }
 
 void ADSR::OnSetNote() {
+    write_log("Set ADSR\n");
     if (m_state == Off) {
         m_state = Attack;
     }
@@ -93,7 +91,6 @@ void ADSR::OnUnsetNote() {
 }
 
 void ADSR::Process(std::vector<float>& samples) {
-    write_log("ADSR State: %d\n", m_state);
     for (std::size_t i = 0; i < samples.size(); i++) {
         recheck_state();
         process_sample(&samples[i]);

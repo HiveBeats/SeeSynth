@@ -9,10 +9,10 @@ Ramp::Ramp(float starting_level, float sample_rate) {
 Ramp::~Ramp() {
 }
 
-void Ramp::RampTo(float value, float time) {
-    m_increment = (value - m_level) / (m_sample_rate * time);
+void Ramp::RampTo(float val, float time) {
+    m_increment = (val - m_level) / (m_sample_rate * time);
     m_counter = (int)(m_sample_rate * time);
-    write_log("Ramping from: %.1f to: %.1f by: %.1f for: %d\n", m_level, value, m_increment, m_counter);
+    write_log("Ramping from: %.1f to: %.1f by: %lf for: %d\n", m_level, val, m_increment, m_counter);
 }
 
 float Ramp::Process() {

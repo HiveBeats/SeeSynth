@@ -3,11 +3,15 @@
 #include "KeyBoard.h"
 #include "OscillatorType.h"
 #include "Settings.h"
+#include "Logger.h"
 
 Synth::Synth(/* args */) {
     AddOscillator();
     AddEffect(new ADSR());
-    m_out_signal.reserve(STREAM_BUFFER_SIZE);
+    for (size_t i = 0; i < STREAM_BUFFER_SIZE; i++) {
+        float sample = 0.0f;
+        m_out_signal.push_back(sample);
+    }
     zero_signal();
 }
 
