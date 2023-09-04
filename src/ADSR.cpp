@@ -6,58 +6,96 @@ ADSR::ADSR(/* args */) {
     m_parameters.attack_time = 1.f;
     m_parameters.decay_time = 0.3f;
     m_parameters.sustain_level = 0.6f;
-    m_parameters.release_time = 1.0f;
-    m_counter = 0;
+    m_parameters.release_time = 0.8f;
+    m_ramp = new Ramp(0, SAMPLE_RATE);
 }
 
 ADSR::ADSR(ADSRParameters param) {
     m_parameters = param;
-    m_counter = 0;
 }
 
-ADSR::~ADSR() {}
+ADSR::~ADSR() {
+    delete m_ramp;
+}
 
-void ADSR::set_state(std::size_t attack_samples, std::size_t decay_samples,
-                     std::size_t release_samples) {
-    if (m_counter < attack_samples) {
+bool ADSR::is_attack_elapsed() {
+    return m_state == Attack && m_ramp->IsCompleted();
+}
+
+bool ADSR::is_decay_elapsed() {
+    return m_state == Decay && m_ramp->IsCompleted();
+}
+
+bool ADSR::is_release_elapsed() {
+    return m_state == Release && m_ramp->IsCompleted();
+}
+
+void ADSR::recheck_state() {
+    switch (m_state)
+    {
+    case Off:
         m_state = Attack;
-    } else if (m_counter >= attack_samples &&
-               m_counter < attack_samples + decay_samples) {
-        m_state = Decay;
-    } else if (m_counter >= attack_samples + decay_samples) {
-        m_state = Sustain;
+        break;
+    case Attack:
+        if (is_attack_elapsed()) {
+            m_state = Decay;
+            m_ramp->RampTo(m_parameters.sustain_level, m_parameters.decay_time);
+        }
+        break;
+    case Decay:
+        if (is_decay_elapsed()) {
+            m_state = Sustain;
+        }
+        break;
+    case Release:
+        if (is_release_elapsed()) {
+            m_state = Off;
+        }
+        break;
+    default:
+        break;
     }
 }
 
-void ADSR::process_sample(float* sample, std::size_t attack_samples,
-                          std::size_t decay_samples,
-                          std::size_t release_samples) {
-
-    set_state(attack_samples, decay_samples, release_samples);
-    if (m_state == Attack) {
-        (*sample) = (*sample) * ((float)(1.f / attack_samples) * m_counter);
-    } else if (m_state == Decay) {
+void ADSR::process_sample(float* sample) {
+    if (m_state == Off) {
+        (*sample) = 0;
     }
-    m_counter++;
-    // todo: release state on note off (in reset function?)
+    else if (m_state == Attack) {
+        (*sample) = (*sample) * m_ramp->Process();
+    } 
+    else if (m_state == Decay) {
+        (*sample) = (*sample) * m_ramp->Process();
+    }
+    else if (m_state == Sustain) {
+        (*sample) = (*sample) * m_parameters.sustain_level;
+    }
+    else if (m_state == Release) {
+        (*sample) = (*sample) * m_ramp->Process();
+    }
 }
 
-void ADSR::RetriggerState() {
-    m_counter = 0;
-    m_state = Attack;
+void ADSR::OnSetNote() {
+    if (m_state == Off) {
+        m_state = Attack;
+    }
+    else if (m_state == Release) {
+        m_state = Attack;
+    };
+
+    m_ramp->RampTo(1, m_parameters.attack_time);
+}
+
+void ADSR::OnUnsetNote() {
+    write_log("Unset ADSR\n");
+    m_state = Release;
+    m_ramp->RampTo(0, m_parameters.release_time);
 }
 
 void ADSR::Process(std::vector<float>& samples) {
-    const std::size_t attack_samples =
-        (std::size_t)(m_parameters.attack_time * SAMPLE_RATE);
-    const std::size_t decay_samples =
-        (std::size_t)(m_parameters.decay_time * SAMPLE_RATE);
-    const std::size_t release_samples =
-        (std::size_t)(m_parameters.release_time * SAMPLE_RATE);
-    write_log("Attack samples: %zu \n", attack_samples);
+    write_log("ADSR State: %d\n", m_state);
     for (std::size_t i = 0; i < samples.size(); i++) {
-        process_sample(&samples[i], attack_samples, decay_samples,
-                       release_samples);
+        recheck_state();
+        process_sample(&samples[i]);
     }
-    write_log("Processed samples: %zu \n", m_counter);
 }

@@ -11,12 +11,14 @@ class Synth {
   private:
     bool is_note_triggered;
     std::vector<Oscillator*> m_oscillators;
-    Adder m_adder;
     std::vector<Effect*> m_effects;
     // OscillatorUI* ui_oscillators;
     // Note m_current_note;
     std::vector<float> m_out_signal;
+    void zero_signal();
     void get_note();
+    void trigger_note_on_effects();
+    void untrigger_note_on_effects();
     void apply_effects();
 
   public:

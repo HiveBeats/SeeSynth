@@ -85,6 +85,12 @@ bool Application::detect_note_pressed(Note* note) {
     return is_pressed == 1;
 }
 
+bool is_note_up() {
+    return IsKeyReleased(KEY_A) || IsKeyReleased(KEY_B) || IsKeyReleased(KEY_C) 
+        || IsKeyReleased(KEY_D) || IsKeyReleased(KEY_E) || IsKeyReleased(KEY_F) 
+        || IsKeyReleased(KEY_G);
+}
+
 // Update On Input
 void Application::update_on_note_input() {
     if (detect_note_pressed(m_current_note)) {
@@ -92,14 +98,15 @@ void Application::update_on_note_input() {
         if (!m_synth.GetIsNoteTriggered()){
             m_synth.TriggerNote((*m_current_note));
         }
-        m_synth.ProduceSound();
+        
         //m_sound_played_count = 0;
         write_log("Note played: %s\n", m_current_note->name.c_str());
     }
-    else {
+    else if (is_note_up()) {
         m_synth.StopSound();
     }
-    
+    // will produce 0 signal if ADSR is in off state
+    m_synth.ProduceSound();
 }
 
 // Play ring-buffered audio
@@ -109,7 +116,7 @@ void Application::play_buffered_audio() {
         update_on_note_input();
         UpdateAudioStream(m_synth_stream, m_synth.GetOutSignal().data(), STREAM_BUFFER_SIZE);
         const float audio_freme_duration = GetTime() - audio_frame_start_time;
-        write_log("Frame time: %.3f%% \n", 100.0f / ((1.0f / audio_freme_duration) / ((float)SAMPLE_RATE/STREAM_BUFFER_SIZE)));
+        //write_log("Frame time: %.3f%% \n", 100.0f / ((1.0f / audio_freme_duration) / ((float)SAMPLE_RATE/STREAM_BUFFER_SIZE)));
     }
 }
 

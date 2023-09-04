@@ -7,10 +7,8 @@
 Synth::Synth(/* args */) {
     AddOscillator();
     AddEffect(new ADSR());
-    for (size_t i = 0; i < STREAM_BUFFER_SIZE; i++) {
-        float sample = 0.0f;
-        m_out_signal.push_back(sample);
-    }
+    m_out_signal.reserve(STREAM_BUFFER_SIZE);
+    zero_signal();
 }
 
 Synth::~Synth() {
@@ -19,26 +17,37 @@ Synth::~Synth() {
     m_out_signal.clear();
 }
 
-void Synth::get_note() {
+void Synth::zero_signal() {
+    float sample = 0.0f;
     for (size_t i = 0; i < STREAM_BUFFER_SIZE; i++) {
-        float sample = 0.0f;
         m_out_signal[i] = sample;
     }
+}
 
-    // todo: add other pipeline steps (e.g ADSR, Filters, FX);
+void Synth::get_note() {
+    zero_signal();
     Adder::SumOscillators(m_oscillators, m_out_signal);
 }
 
 void Synth::apply_effects() {
     for (Effect* effect : m_effects) {
-        // maybe not here
-        //effect->RetriggerState();
         effect->Process(m_out_signal);
     }
 }
 
+void Synth::trigger_note_on_effects() {
+    for (Effect* effect : m_effects) {
+        effect->OnSetNote();
+    }
+}
+
+void Synth::untrigger_note_on_effects() {
+    for (Effect* effect : m_effects) {
+        effect->OnUnsetNote();
+    }
+}
+
 void Synth::TriggerNote(Note input) {
-    float length = 1.f / input.length;
     int semitone_shift = KeyBoard::GetSemitoneShift(input.name);
     float hz = KeyBoard::GetHzBySemitone(semitone_shift);
 
@@ -47,6 +56,7 @@ void Synth::TriggerNote(Note input) {
         osc->SetFreq(hz);
     }
     is_note_triggered = true;
+    trigger_note_on_effects();
 }
 
 void Synth::ProduceSound() {
@@ -54,12 +64,11 @@ void Synth::ProduceSound() {
     apply_effects();
 }
 
+// todo: rename to something like untrigger note
 void Synth::StopSound() {
-    for (size_t i = 0; i < STREAM_BUFFER_SIZE; i++) {
-        float sample = 0.0f;
-        m_out_signal[i] = sample;
-    }
+    zero_signal();
     is_note_triggered = false;
+    untrigger_note_on_effects();
 }
 
 void Synth::AddOscillator() {

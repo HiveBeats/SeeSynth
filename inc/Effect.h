@@ -6,6 +6,8 @@ class Effect {
   public:
     Effect(/* args */){};
     ~Effect(){};
-    virtual void RetriggerState(){};
+    virtual void OnSetNote(){};
+    virtual void OnUnsetNote(){};
+    //virtual void RetriggerState(){};
     virtual void Process(std::vector<float>& samples){};
 };

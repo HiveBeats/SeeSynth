@@ -2,7 +2,14 @@
 #define RAYGUI_IMPLEMENTATION
 #include "Logger.h"
 #include "Settings.h"
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunused-but-set-variable"
+#pragma clang diagnostic ignored "-Wunused-variable"
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
 #include "raygui.h"
+#pragma clang diagnostic pop
+
 
 Renderer::Renderer(/* args */) {
     InitWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "SeeSynth - v0.2");
@@ -105,7 +112,7 @@ void Renderer::draw_oscillators_panels(
         // Volume slider
         float decibels = (20.f * log10f(osc->GetVolume()));
         char amp_slider_label[32];
-        sprintf(amp_slider_label, "%.1f dB", decibels);
+        snprintf(amp_slider_label, 7, "%.1f dB", decibels);
         decibels =
             GuiSlider(el_rect, amp_slider_label, "", decibels, -60.0f, 0.0f);
         ui_osc->volume = powf(10.f, decibels * (1.f / 20.f));
@@ -116,7 +123,7 @@ void Renderer::draw_oscillators_panels(
         // Defer shape drop-down box.
         ui_osc->shape_dropdown_rect = el_rect;
         el_rect.y += el_rect.height + el_spacing;
-        /*
+        
         Rectangle delete_button_rect = el_rect;
         delete_button_rect.x = osc_panel_x + 5;
         delete_button_rect.y -= el_rect.height + el_spacing;
@@ -124,15 +131,15 @@ void Renderer::draw_oscillators_panels(
         bool is_delete_button_pressed = GuiButton(delete_button_rect, "X");
         if (is_delete_button_pressed)
         {
-            memmove(
-                    synth->ui_oscillator + ui_osc_i,
-                    synth->ui_oscillator + ui_osc_i + 1,
-                    (synth->ui_oscillator_count - ui_osc_i) *
-        sizeof(UiOscillator)
-                    );
-            synth->ui_oscillator_count -= 1;
+        //     memmove(
+        //             synth->ui_oscillator + ui_osc_i,
+        //             synth->ui_oscillator + ui_osc_i + 1,
+        //             (synth->ui_oscillator_count - ui_osc_i) *
+        // sizeof(UiOscillator)
+        //             );
+        //     synth->ui_oscillator_count -= 1;
         }
-        */
+        
     }
 }
 
