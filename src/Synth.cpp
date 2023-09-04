@@ -1,9 +1,9 @@
 #include "Synth.h"
 #include "ADSR.h"
 #include "KeyBoard.h"
+#include "Logger.h"
 #include "OscillatorType.h"
 #include "Settings.h"
-#include "Logger.h"
 
 Synth::Synth(/* args */) {
     AddOscillator();

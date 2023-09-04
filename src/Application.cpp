@@ -86,23 +86,22 @@ bool Application::detect_note_pressed(Note* note) {
 }
 
 bool is_note_up() {
-    return IsKeyReleased(KEY_A) || IsKeyReleased(KEY_B) || IsKeyReleased(KEY_C) 
-        || IsKeyReleased(KEY_D) || IsKeyReleased(KEY_E) || IsKeyReleased(KEY_F) 
-        || IsKeyReleased(KEY_G);
+    return IsKeyReleased(KEY_A) || IsKeyReleased(KEY_B) ||
+           IsKeyReleased(KEY_C) || IsKeyReleased(KEY_D) ||
+           IsKeyReleased(KEY_E) || IsKeyReleased(KEY_F) || IsKeyReleased(KEY_G);
 }
 
 // Update On Input
 void Application::update_on_note_input() {
     if (detect_note_pressed(m_current_note)) {
-        
-        if (!m_synth.GetIsNoteTriggered()){
+
+        if (!m_synth.GetIsNoteTriggered()) {
             m_synth.TriggerNote((*m_current_note));
         }
-        
-        //m_sound_played_count = 0;
+
+        // m_sound_played_count = 0;
         write_log("Note played: %s\n", m_current_note->name.c_str());
-    }
-    else if (is_note_up() && m_synth.GetIsNoteTriggered()) {
+    } else if (is_note_up() && m_synth.GetIsNoteTriggered()) {
         m_synth.StopSound();
     }
     // will produce 0 signal if ADSR is in off state
@@ -112,11 +111,14 @@ void Application::update_on_note_input() {
 // Play ring-buffered audio
 void Application::play_buffered_audio() {
     if (IsAudioStreamProcessed(m_synth_stream)) {
-        //const float audio_frame_start_time = GetTime();
+        // const float audio_frame_start_time = GetTime();
         update_on_note_input();
-        UpdateAudioStream(m_synth_stream, m_synth.GetOutSignal().data(), STREAM_BUFFER_SIZE);
-        //const float audio_freme_duration = GetTime() - audio_frame_start_time;
-        //write_log("Frame time: %.3f%% \n", 100.0f / ((1.0f / audio_freme_duration) / ((float)SAMPLE_RATE/STREAM_BUFFER_SIZE)));
+        UpdateAudioStream(m_synth_stream, m_synth.GetOutSignal().data(),
+                          STREAM_BUFFER_SIZE);
+        // const float audio_freme_duration = GetTime() -
+        // audio_frame_start_time; write_log("Frame time: %.3f%% \n", 100.0f /
+        // ((1.0f / audio_freme_duration) /
+        // ((float)SAMPLE_RATE/STREAM_BUFFER_SIZE)));
     }
 }
 

@@ -1,6 +1,6 @@
 #include "ADSR.h"
-#include "Settings.h"
 #include "Logger.h"
+#include "Settings.h"
 
 ADSR::ADSR(/* args */) {
     m_parameters.attack_time = 1.f;
@@ -10,13 +10,9 @@ ADSR::ADSR(/* args */) {
     m_ramp = new Ramp(0, SAMPLE_RATE);
 }
 
-ADSR::ADSR(ADSRParameters param) {
-    m_parameters = param;
-}
+ADSR::ADSR(ADSRParameters param) { m_parameters = param; }
 
-ADSR::~ADSR() {
-    delete m_ramp;
-}
+ADSR::~ADSR() { delete m_ramp; }
 
 bool ADSR::is_attack_elapsed() {
     return m_state == Attack && m_ramp->IsCompleted();
@@ -31,43 +27,39 @@ bool ADSR::is_release_elapsed() {
 }
 
 void ADSR::recheck_state() {
-    switch (m_state)
-    {
-    case Attack:
-        if (is_attack_elapsed()) {
-            m_state = Decay;
-            m_ramp->RampTo(m_parameters.sustain_level, m_parameters.decay_time);
-        }
-        break;
-    case Decay:
-        if (is_decay_elapsed()) {
-            m_state = Sustain;
-        }
-        break;
-    case Release:
-        if (is_release_elapsed()) {
-            m_state = Off;
-        }
-        break;
-    default:
-        break;
+    switch (m_state) {
+        case Attack:
+            if (is_attack_elapsed()) {
+                m_state = Decay;
+                m_ramp->RampTo(m_parameters.sustain_level,
+                               m_parameters.decay_time);
+            }
+            break;
+        case Decay:
+            if (is_decay_elapsed()) {
+                m_state = Sustain;
+            }
+            break;
+        case Release:
+            if (is_release_elapsed()) {
+                m_state = Off;
+            }
+            break;
+        default:
+            break;
     }
 }
 
 void ADSR::process_sample(float* sample) {
     if (m_state == Off) {
         (*sample) = 0;
-    }
-    else if (m_state == Attack) {
+    } else if (m_state == Attack) {
         (*sample) = (*sample) * m_ramp->Process();
-    } 
-    else if (m_state == Decay) {
+    } else if (m_state == Decay) {
         (*sample) = (*sample) * m_ramp->Process();
-    }
-    else if (m_state == Sustain) {
+    } else if (m_state == Sustain) {
         (*sample) = (*sample) * m_parameters.sustain_level;
-    }
-    else if (m_state == Release) {
+    } else if (m_state == Release) {
         (*sample) = (*sample) * m_ramp->Process();
     }
 }
@@ -76,8 +68,7 @@ void ADSR::OnSetNote() {
     write_log("Set ADSR\n");
     if (m_state == Off) {
         m_state = Attack;
-    }
-    else if (m_state == Release) {
+    } else if (m_state == Release) {
         m_state = Attack;
     };
 

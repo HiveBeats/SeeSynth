@@ -2,7 +2,7 @@
 
 #define SAMPLE_RATE 44100.f
 #define BPM 120.f
-#define BEAT_DURATION 60.f/BPM
+#define BEAT_DURATION 60.f / BPM
 #define PITCH_STANDARD 440.f
 #define VOLUME 0.5f
 #define ATTACK_MS 100.f

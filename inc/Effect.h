@@ -8,6 +8,6 @@ class Effect {
     ~Effect(){};
     virtual void OnSetNote(){};
     virtual void OnUnsetNote(){};
-    //virtual void RetriggerState(){};
+    // virtual void RetriggerState(){};
     virtual void Process(std::vector<float>& samples){};
 };

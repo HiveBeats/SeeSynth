@@ -10,7 +10,6 @@
 #include "raygui.h"
 #pragma clang diagnostic pop
 
-
 Renderer::Renderer(/* args */) {
     InitWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "SeeSynth - v0.2");
     SetTargetFPS(FPS);
@@ -123,23 +122,21 @@ void Renderer::draw_oscillators_panels(
         // Defer shape drop-down box.
         ui_osc->shape_dropdown_rect = el_rect;
         el_rect.y += el_rect.height + el_spacing;
-        
+
         Rectangle delete_button_rect = el_rect;
         delete_button_rect.x = osc_panel_x + 5;
         delete_button_rect.y -= el_rect.height + el_spacing;
         delete_button_rect.width = 30;
         bool is_delete_button_pressed = GuiButton(delete_button_rect, "X");
-        if (is_delete_button_pressed)
-        {
-        //     memmove(
-        //             synth->ui_oscillator + ui_osc_i,
-        //             synth->ui_oscillator + ui_osc_i + 1,
-        //             (synth->ui_oscillator_count - ui_osc_i) *
-        // sizeof(UiOscillator)
-        //             );
-        //     synth->ui_oscillator_count -= 1;
+        if (is_delete_button_pressed) {
+            //     memmove(
+            //             synth->ui_oscillator + ui_osc_i,
+            //             synth->ui_oscillator + ui_osc_i + 1,
+            //             (synth->ui_oscillator_count - ui_osc_i) *
+            // sizeof(UiOscillator)
+            //             );
+            //     synth->ui_oscillator_count -= 1;
         }
-        
     }
 }
 
@@ -149,8 +146,9 @@ void Renderer::draw_main_panel(const Rectangle& panel_bounds) {
     GuiPanel(panel_bounds, "");
 }
 
-void Renderer::draw_add_oscillator_button(Synth& synth, SynthGuiState& synth_gui,
-                                       Rectangle panel_bounds) {
+void Renderer::draw_add_oscillator_button(Synth& synth,
+                                          SynthGuiState& synth_gui,
+                                          Rectangle panel_bounds) {
     //clang-format off
     bool click_add_oscillator =
         GuiButton((Rectangle){panel_bounds.x + 10, panel_bounds.y + 10,
