@@ -3,20 +3,12 @@
         {
             "type": "cppbuild",
             "label": "C/C++: clang сборка активного файла",
-            "command": "/usr/bin/clang",
+            "command": "sh",
             "args": [
-                "-fcolor-diagnostics",
-                "-fansi-escape-codes",
-                "-g",
-                "${file}",
-                "$(find ${fileDirname}/src -type f -iregex '.*\\.cpp')",
-                "-lm",
-                "-lraylib",
-                "-o",
-                "${fileDirname}/bin/${fileBasenameNoExtension}"
+                "${workspaceFolder}/build.sh"
             ],
             "options": {
-                "cwd": "${fileDirname}"
+                "cwd": "${workspaceFolder}"
             },
             "problemMatcher": [
                 "$gcc"
