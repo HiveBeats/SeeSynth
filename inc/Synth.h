@@ -6,6 +6,7 @@
 #include "Oscillator.h"
 #include "Settings.h"
 #include <vector>
+#include "ADSR.h"
 
 class Synth {
   private:
@@ -32,4 +33,5 @@ class Synth {
     const std::vector<float>& GetOutSignal() { return m_out_signal; }
     const std::vector<Oscillator*>& GetOscillators() { return m_oscillators; }
     const bool& GetIsNoteTriggered() { return is_note_triggered; }
+    ADSR* GetADSR() { return (ADSR*)m_effects[0]; }
 };

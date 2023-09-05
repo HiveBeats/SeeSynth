@@ -33,4 +33,5 @@ class ADSR : public Effect {
     // void RetriggerState() override;
     void Process(std::vector<float>& samples) override;
     void Reset();
+    void SetParameters(float attack, float decay, float sustain, float release);
 };

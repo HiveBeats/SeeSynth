@@ -87,3 +87,10 @@ void ADSR::Process(std::vector<float>& samples) {
         process_sample(&samples[i]);
     }
 }
+
+void ADSR::SetParameters(float attack, float decay, float sustain, float release) {
+    m_parameters.attack_time = attack;
+    m_parameters.decay_time = decay;
+    m_parameters.sustain_level = sustain;
+    m_parameters.release_time = release;
+}
