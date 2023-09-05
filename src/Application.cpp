@@ -86,9 +86,9 @@ bool Application::detect_note_pressed(Note* note) {
 }
 
 bool is_note_up() {
-    return IsKeyReleased(KEY_A) || IsKeyReleased(KEY_B) ||
-           IsKeyReleased(KEY_C) || IsKeyReleased(KEY_D) ||
-           IsKeyReleased(KEY_E) || IsKeyReleased(KEY_F) || IsKeyReleased(KEY_G);
+    return IsKeyUp(KEY_A) || IsKeyUp(KEY_B) ||
+           IsKeyUp(KEY_C) || IsKeyUp(KEY_D) ||
+           IsKeyUp(KEY_E) || IsKeyUp(KEY_F) || IsKeyUp(KEY_G);
 }
 
 // Update On Input
