@@ -1,12 +1,12 @@
 #pragma once
 
+#include "ADSR.h"
 #include "Adder.h"
 #include "Effect.h"
 #include "Note.h"
 #include "Oscillator.h"
 #include "Settings.h"
 #include <vector>
-#include "ADSR.h"
 
 class Synth {
   private:

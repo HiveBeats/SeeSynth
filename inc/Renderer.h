@@ -1,9 +1,9 @@
 #pragma once
+#include "ADSR.h"
 #include "Synth.h"
 #include "SynthGuiState.h"
 #include "raylib.h"
 #include <vector>
-#include "ADSR.h"
 
 class Renderer {
   private:
@@ -19,7 +19,9 @@ class Renderer {
         const std::vector<OscillatorGuiState*>& guiOscillators);
     void draw_ui(Synth& synth, SynthGuiState& synth_gui);
     void draw_signal(Synth& synth, SynthGuiState& synth_gui);
-    void draw_adsr_panel(ADSR* adsr, ADSRGuiState& gui_adsr, const Rectangle& panel_bounds, float panel_y_offset);
+    void draw_adsr_panel(ADSR* adsr, ADSRGuiState& gui_adsr,
+                         const Rectangle& panel_bounds, float panel_y_offset);
+
   public:
     Renderer(/* args */);
     ~Renderer();
