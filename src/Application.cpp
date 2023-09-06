@@ -4,8 +4,6 @@
 #include <string>
 
 Application::Application(/* args */) {
-    m_ring_buffer = new RingBuffer<float>((std::size_t)STREAM_BUFFER_SIZE);
-    m_temp_buffer = new float[STREAM_BUFFER_SIZE];
     init_synth();
     init_audio();
 }
@@ -15,8 +13,6 @@ Application::~Application() {
     UnloadAudioStream(m_synth_stream);
     CloseAudioDevice();
     CloseWindow();
-    delete m_ring_buffer;
-    delete[] m_temp_buffer;
     // todo: move to gui state class destructor (make it a class)
     for (int i = 0; i < m_synth_gui_state.oscillators.size(); i++) {
         delete m_synth_gui_state.oscillators[i];
@@ -39,7 +35,7 @@ void Application::init_synth() {
     // todo: move that variables to Synth declaration
     std::string* nameString = new std::string(std::string(new char[3]));
     m_current_note = new Note{.length = 1, .name = (*nameString)};
-
+    m_current_note->name.assign("G4");
     // todo: move somewhere in initialization
     std::vector<Oscillator*> oscillators = m_synth.GetOscillators();
     m_synth_gui_state.oscillators.reserve(oscillators.size());
@@ -55,103 +51,81 @@ void Application::init_synth() {
     }
 }
 
-std::size_t Application::detect_note_pressed(Note* note) {
+bool Application::detect_note_pressed(Note* note) {
     std::size_t is_pressed = 0;
     note->length = 8;
-    if (IsKeyPressed(KEY_A)) {
-        note->name.assign("A4");
+    if (IsKeyDown(KEY_A)) {
+        note->name.assign("A2");
         is_pressed = 1;
     }
-    if (IsKeyPressed(KEY_B)) {
-        note->name.assign("B4");
+    if (IsKeyDown(KEY_B)) {
+        note->name.assign("B2");
         is_pressed = 1;
     }
-    if (IsKeyPressed(KEY_C)) {
-        note->name.assign("C4");
+    if (IsKeyDown(KEY_C)) {
+        note->name.assign("C2");
         is_pressed = 1;
     }
-    if (IsKeyPressed(KEY_D)) {
-        note->name.assign("D4");
+    if (IsKeyDown(KEY_D)) {
+        note->name.assign("D2");
         is_pressed = 1;
     }
-    if (IsKeyPressed(KEY_E)) {
-        note->name.assign("E4");
+    if (IsKeyDown(KEY_E)) {
+        note->name.assign("E2");
         is_pressed = 1;
     }
-    if (IsKeyPressed(KEY_F)) {
-        note->name.assign("F4");
+    if (IsKeyDown(KEY_F)) {
+        note->name.assign("F2");
         is_pressed = 1;
     }
-    if (IsKeyPressed(KEY_G)) {
-        note->name.assign("G4");
+    if (IsKeyDown(KEY_G)) {
+        note->name.assign("G2");
         is_pressed = 1;
     }
-    return is_pressed;
+    return is_pressed == 1;
+}
+
+bool is_note_up() {
+    return IsKeyUp(KEY_A) || IsKeyUp(KEY_B) ||
+           IsKeyUp(KEY_C) || IsKeyUp(KEY_D) ||
+           IsKeyUp(KEY_E) || IsKeyUp(KEY_F) || IsKeyUp(KEY_G);
 }
 
 // Update On Input
 void Application::update_on_note_input() {
     if (detect_note_pressed(m_current_note)) {
-        m_synth.ProduceNoteSound((*m_current_note));
-        m_sound_played_count = 0;
+
+        if (!m_synth.GetIsNoteTriggered()) {
+            m_synth.TriggerNote((*m_current_note));
+        }
+
+        // m_sound_played_count = 0;
         write_log("Note played: %s\n", m_current_note->name.c_str());
+    } else if (is_note_up() && m_synth.GetIsNoteTriggered()) {
+        m_synth.StopSound();
     }
+    // will produce 0 signal if ADSR is in off state
+    m_synth.ProduceSound();
 }
 
 // Play ring-buffered audio
 void Application::play_buffered_audio() {
-    if (IsAudioStreamProcessed(m_synth_stream) && !m_ring_buffer->IsEmpty()) {
-        std::size_t size_to_read = m_ring_buffer->GetSize();
-
-        write_log("Samples to play:%zu \n", size_to_read);
-        // todo: try to start reading directly from ring buffer, avoiding
-        // temp_buffer
-        m_ring_buffer->Read(m_temp_buffer, size_to_read);
-        // can try the SetAudioStreamCallback
-        UpdateAudioStream(m_synth_stream, m_temp_buffer, size_to_read);
-        // can overwrite the ring buffer to avoid that
-        if (m_synth.GetOutSignal().size() == m_sound_played_count) {
-            m_ring_buffer->Reset();
-        }
-    }
-}
-
-// Fill ring buffer from current sound
-void Application::fill_audio_buffer() {
-    if (!m_ring_buffer->IsFull() &&
-        m_synth.GetOutSignal().size() != m_sound_played_count) {
-        write_log("[INFO] IsFull:%d Samples:%zu Played:%d\n",
-                  m_ring_buffer->IsFull(), m_synth.GetOutSignal().size(),
-                  m_sound_played_count);
-
-        // how many samples need write
-        std::size_t size_to_fill = 0;
-
-        if ((m_synth.GetOutSignal().size() - m_sound_played_count) >
-            m_ring_buffer->GetCapacity()) {
-            size_to_fill = m_ring_buffer->GetCapacity();
-        } else {
-            size_to_fill = m_synth.GetOutSignal().size() - m_sound_played_count;
-        }
-
-        write_log("[INFO] SizeToFill:%zu\n", size_to_fill);
-        for (size_t i = 0; i < size_to_fill; i++) {
-            m_temp_buffer[i] = m_synth.GetOutSignal()[i];
-        }
-
-        m_ring_buffer->Write(m_temp_buffer, size_to_fill);
-        m_sound_played_count += size_to_fill;
+    if (IsAudioStreamProcessed(m_synth_stream)) {
+        // const float audio_frame_start_time = GetTime();
+        update_on_note_input();
+        UpdateAudioStream(m_synth_stream, m_synth.GetOutSignal().data(),
+                          STREAM_BUFFER_SIZE);
+        // const float audio_freme_duration = GetTime() -
+        // audio_frame_start_time; write_log("Frame time: %.3f%% \n", 100.0f /
+        // ((1.0f / audio_freme_duration) /
+        // ((float)SAMPLE_RATE/STREAM_BUFFER_SIZE)));
     }
 }
 
 void Application::Run() {
     // Main game loop
-    while (!WindowShouldClose()) // Detect window close button or ESC key
-    {
-        fill_audio_buffer();
+    while (!WindowShouldClose()) {
         play_buffered_audio();
-        update_on_note_input();
-
         m_renderer.Draw(m_synth, m_synth_gui_state);
     }
 }

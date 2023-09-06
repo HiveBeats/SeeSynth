@@ -11,6 +11,14 @@ struct OscillatorGuiState {
     Rectangle shape_dropdown_rect;
 };
 
+struct ADSRGuiState {
+    float attack;
+    float decay;
+    float sustain;
+    float release;
+};
+
 struct SynthGuiState {
     std::vector<OscillatorGuiState*> oscillators;
+    ADSRGuiState adsr;
 };

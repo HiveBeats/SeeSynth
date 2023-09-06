@@ -26,6 +26,7 @@ release_samples = int(release_time * sample_rate)
 
 # Attack phase
 envelope[:attack_samples] = np.linspace(0, 1, num=attack_samples)
+# 1/n * count;
 
 # Decay phase
 decay_slope = (1 - sustain_level) / decay_samples
