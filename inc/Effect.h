@@ -8,6 +8,5 @@ class Effect {
     ~Effect(){};
     virtual void Trigger(){};
     virtual void Release(){};
-    // virtual void RetriggerState(){};
     virtual void Process(std::vector<float>& samples){};
 };

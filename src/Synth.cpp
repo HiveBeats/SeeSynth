@@ -6,7 +6,8 @@
 #include "Settings.h"
 
 Synth::Synth(/* args */) {
-    AddOscillator();
+    add_oscillator();
+    add_oscillator();
     AddEffect(new ADSR());
     for (size_t i = 0; i < STREAM_BUFFER_SIZE; i++) {
         float sample = 0.0f;
@@ -51,11 +52,15 @@ void Synth::untrigger_note_on_effects() {
     }
 }
 
+void Synth::add_oscillator() {
+    m_oscillators.push_back(
+        new Oscillator(OscillatorType::Sine, 440.f, VOLUME));
+}
+
 void Synth::Trigger(Note input) {
     int semitone_shift = KeyBoard::GetSemitoneShift(input.name);
     float hz = KeyBoard::GetHzBySemitone(semitone_shift);
 
-    // will change after oscillator starts to be more autonomous
     for (Oscillator* osc : m_oscillators) {
         osc->SetFreq(hz);
     }
@@ -68,16 +73,10 @@ void Synth::Process() {
     apply_effects();
 }
 
-// todo: rename to something like untrigger note
 void Synth::Release() {
     zero_signal();
     is_note_triggered = false;
     untrigger_note_on_effects();
-}
-
-void Synth::AddOscillator() {
-    m_oscillators.push_back(
-        new Oscillator(OscillatorType::Sine, 440.f, VOLUME));
 }
 
 void Synth::AddEffect(Effect* fx) { m_effects.push_back(fx); }

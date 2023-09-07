@@ -32,11 +32,10 @@ void Application::init_audio() {
 }
 
 void Application::init_synth() {
-    // todo: move that variables to Synth declaration
     std::string* nameString = new std::string(std::string(new char[3]));
     m_current_note = new Note{.length = 1, .name = (*nameString)};
     m_current_note->name.assign("G4");
-    // todo: move somewhere in initialization
+
     std::vector<Oscillator*> oscillators = m_synth.GetOscillators();
     m_synth_gui_state.oscillators.reserve(oscillators.size());
     for (size_t i = 0; i < oscillators.size(); i++) {
@@ -86,20 +85,15 @@ bool Application::detect_note_pressed(Note* note) {
 }
 
 bool is_note_up() {
-    return IsKeyUp(KEY_A) || IsKeyUp(KEY_B) ||
-           IsKeyUp(KEY_C) || IsKeyUp(KEY_D) ||
-           IsKeyUp(KEY_E) || IsKeyUp(KEY_F) || IsKeyUp(KEY_G);
+    return IsKeyUp(KEY_A) || IsKeyUp(KEY_B) || IsKeyUp(KEY_C) ||
+           IsKeyUp(KEY_D) || IsKeyUp(KEY_E) || IsKeyUp(KEY_F) || IsKeyUp(KEY_G);
 }
 
-// Update On Input
 void Application::update_on_note_input() {
     if (detect_note_pressed(m_current_note)) {
-
         if (!m_synth.GetIsNoteTriggered()) {
             m_synth.Trigger((*m_current_note));
         }
-
-        // m_sound_played_count = 0;
         write_log("Note played: %s\n", m_current_note->name.c_str());
     } else if (is_note_up() && m_synth.GetIsNoteTriggered()) {
         m_synth.Release();
@@ -111,14 +105,9 @@ void Application::update_on_note_input() {
 // Play ring-buffered audio
 void Application::play_buffered_audio() {
     if (IsAudioStreamProcessed(m_synth_stream)) {
-        // const float audio_frame_start_time = GetTime();
         update_on_note_input();
         UpdateAudioStream(m_synth_stream, m_synth.GetOutSignal().data(),
                           STREAM_BUFFER_SIZE);
-        // const float audio_freme_duration = GetTime() -
-        // audio_frame_start_time; write_log("Frame time: %.3f%% \n", 100.0f /
-        // ((1.0f / audio_freme_duration) /
-        // ((float)SAMPLE_RATE/STREAM_BUFFER_SIZE)));
     }
 }
 

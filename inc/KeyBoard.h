@@ -7,7 +7,6 @@
 
 class KeyBoard {
   private:
-    /* data */
     static int get_semitone_shift_internal(const char* root_note,
                                            char* target_note) {
         const char* pitch_classes[12] = {"C",  "C#", "D",  "D#", "E",  "F",

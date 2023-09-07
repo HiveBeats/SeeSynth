@@ -8,8 +8,6 @@
 class Renderer {
   private:
     void draw_main_panel(const Rectangle& panel_bounds);
-    void draw_add_oscillator_button(Synth& synth, SynthGuiState& synth_gui,
-                                    Rectangle panel_bounds);
     float draw_oscillators_panels(
         const std::vector<Oscillator*>& oscillators,
         const std::vector<OscillatorGuiState*>& gui_oscillators,
