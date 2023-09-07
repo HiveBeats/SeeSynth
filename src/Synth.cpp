@@ -4,11 +4,13 @@
 #include "Logger.h"
 #include "OscillatorType.h"
 #include "Settings.h"
+#include "LowPassFilter.h"
 
 Synth::Synth(/* args */) {
     add_oscillator();
     add_oscillator();
     AddEffect(new ADSR());
+    AddEffect(new LowPassFilter());
     for (size_t i = 0; i < STREAM_BUFFER_SIZE; i++) {
         float sample = 0.0f;
         m_out_signal.push_back(sample);
