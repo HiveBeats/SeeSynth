@@ -18,7 +18,14 @@ struct ADSRGuiState {
     float release;
 };
 
+struct FilterGuiState {
+    float freq;
+    float res;
+    //todo: type
+};
+
 struct SynthGuiState {
     std::vector<OscillatorGuiState*> oscillators;
     ADSRGuiState adsr;
+    FilterGuiState filter;
 };

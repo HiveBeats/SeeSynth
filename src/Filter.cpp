@@ -1,4 +1,5 @@
 #include "Filter.h"
+#include "Settings.h"
 
 Filter::Filter(/* args */) {
 }
@@ -37,7 +38,7 @@ void Filter::Process(std::vector<float>& samples) {
 }
 
 void Filter::SetParameters(float freq, float res, float q) {
-    m_freq = freq;
+    m_freq = freq / SAMPLE_RATE;
     m_q = res;
     m_order = q;
 }
