@@ -15,34 +15,34 @@ ADSR::ADSR(ADSRParameters param) { m_parameters = param; }
 ADSR::~ADSR() { delete m_ramp; }
 
 bool ADSR::is_attack_elapsed() {
-    return m_state == Attack && m_ramp->IsCompleted();
+    return m_state == sAttack && m_ramp->IsCompleted();
 }
 
 bool ADSR::is_decay_elapsed() {
-    return m_state == Decay && m_ramp->IsCompleted();
+    return m_state == sDecay && m_ramp->IsCompleted();
 }
 
 bool ADSR::is_release_elapsed() {
-    return m_state == Release && m_ramp->IsCompleted();
+    return m_state == sRelease && m_ramp->IsCompleted();
 }
 
 void ADSR::recheck_state() {
     switch (m_state) {
-        case Attack:
+        case sAttack:
             if (is_attack_elapsed()) {
-                m_state = Decay;
+                m_state = sDecay;
                 m_ramp->RampTo(m_parameters.sustain_level,
                                m_parameters.decay_time);
             }
             break;
-        case Decay:
+        case sDecay:
             if (is_decay_elapsed()) {
-                m_state = Sustain;
+                m_state = sSustain;
             }
             break;
-        case Release:
+        case sRelease:
             if (is_release_elapsed()) {
-                m_state = Off;
+                m_state = sOff;
             }
             break;
         default:
@@ -51,33 +51,33 @@ void ADSR::recheck_state() {
 }
 
 void ADSR::process_sample(float* sample) {
-    if (m_state == Off) {
+    if (m_state == sOff) {
         (*sample) = 0;
-    } else if (m_state == Attack) {
+    } else if (m_state == sAttack) {
         (*sample) = (*sample) * m_ramp->Process();
-    } else if (m_state == Decay) {
+    } else if (m_state == sDecay) {
         (*sample) = (*sample) * m_ramp->Process();
-    } else if (m_state == Sustain) {
+    } else if (m_state == sSustain) {
         (*sample) = (*sample) * m_parameters.sustain_level;
-    } else if (m_state == Release) {
+    } else if (m_state == sRelease) {
         (*sample) = (*sample) * m_ramp->Process();
     }
 }
 
-void ADSR::OnSetNote() {
+void ADSR::Trigger() {
     write_log("Set ADSR\n");
-    if (m_state == Off) {
-        m_state = Attack;
-    } else if (m_state == Release) {
-        m_state = Attack;
+    if (m_state == sOff) {
+        m_state = sAttack;
+    } else if (m_state == sRelease) {
+        m_state = sAttack;
     };
 
     m_ramp->RampTo(1, m_parameters.attack_time);
 }
 
-void ADSR::OnUnsetNote() {
+void ADSR::Release() {
     write_log("Unset ADSR\n");
-    m_state = Release;
+    m_state = sRelease;
     m_ramp->RampTo(0, m_parameters.release_time);
 }
 

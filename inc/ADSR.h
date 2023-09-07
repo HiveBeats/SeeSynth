@@ -10,7 +10,7 @@ struct ADSRParameters {
     float release_time;
 };
 
-enum ADSRState { Off, Attack, Decay, Sustain, Release };
+enum ADSRState { sOff, sAttack, sDecay, sSustain, sRelease };
 
 class ADSR : public Effect {
   private:
@@ -28,8 +28,8 @@ class ADSR : public Effect {
     ADSR(/* args */);
     ADSR(ADSRParameters param);
     ~ADSR();
-    void OnSetNote() override;
-    void OnUnsetNote() override;
+    void Trigger() override;
+    void Release() override;
     // void RetriggerState() override;
     void Process(std::vector<float>& samples) override;
     void Reset();

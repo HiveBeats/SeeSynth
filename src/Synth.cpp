@@ -41,17 +41,17 @@ void Synth::apply_effects() {
 
 void Synth::trigger_note_on_effects() {
     for (Effect* effect : m_effects) {
-        effect->OnSetNote();
+        effect->Trigger();
     }
 }
 
 void Synth::untrigger_note_on_effects() {
     for (Effect* effect : m_effects) {
-        effect->OnUnsetNote();
+        effect->Release();
     }
 }
 
-void Synth::TriggerNote(Note input) {
+void Synth::Trigger(Note input) {
     int semitone_shift = KeyBoard::GetSemitoneShift(input.name);
     float hz = KeyBoard::GetHzBySemitone(semitone_shift);
 
@@ -63,13 +63,13 @@ void Synth::TriggerNote(Note input) {
     trigger_note_on_effects();
 }
 
-void Synth::ProduceSound() {
+void Synth::Process() {
     get_note();
     apply_effects();
 }
 
 // todo: rename to something like untrigger note
-void Synth::StopSound() {
+void Synth::Release() {
     zero_signal();
     is_note_triggered = false;
     untrigger_note_on_effects();

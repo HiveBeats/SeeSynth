@@ -96,16 +96,16 @@ void Application::update_on_note_input() {
     if (detect_note_pressed(m_current_note)) {
 
         if (!m_synth.GetIsNoteTriggered()) {
-            m_synth.TriggerNote((*m_current_note));
+            m_synth.Trigger((*m_current_note));
         }
 
         // m_sound_played_count = 0;
         write_log("Note played: %s\n", m_current_note->name.c_str());
     } else if (is_note_up() && m_synth.GetIsNoteTriggered()) {
-        m_synth.StopSound();
+        m_synth.Release();
     }
     // will produce 0 signal if ADSR is in off state
-    m_synth.ProduceSound();
+    m_synth.Process();
 }
 
 // Play ring-buffered audio

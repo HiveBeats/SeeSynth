@@ -25,9 +25,9 @@ class Synth {
   public:
     Synth(/* args */);
     ~Synth();
-    void TriggerNote(Note input);
-    void ProduceSound();
-    void StopSound();
+    void Trigger(Note input);
+    void Process();
+    void Release();
     void AddOscillator();
     void AddEffect(Effect* fx);
     const std::vector<float>& GetOutSignal() { return m_out_signal; }
