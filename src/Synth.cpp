@@ -6,6 +6,7 @@
 #include "LowPassFilter.h"
 
 Synth::Synth(/* args */) {
+    m_lfo = new Oscillator(OscillatorType::Sine, 5.f, VOLUME);
     add_oscillator();
     add_oscillator();
     AddEffect(new ADSR());
@@ -69,7 +70,18 @@ void Synth::Trigger(Note input) {
     trigger_note_on_effects();
 }
 
+void Synth::apply_filter_lfo() {
+    float dt = m_lfo->GenerateSample();
+    Filter* filter = (Filter*)m_effects[1];
+    float freq = filter->GetFreq();
+    //todo: check formula
+    //filter->SetParameters(freq + dt * 0.2f, filter->GetRes(), filter->GetPeakGain());
+}
+
 void Synth::Process() {
+    //todo: on each sample. 
+    //in order to do that, we need to move to per-sample processing
+    apply_filter_lfo();
     get_note();
     apply_effects();
 }

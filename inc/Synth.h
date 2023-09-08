@@ -15,13 +15,14 @@ class Synth {
     std::vector<Oscillator*> m_oscillators;
     std::vector<Effect*> m_effects;
     std::vector<float> m_out_signal;
+    Oscillator* m_lfo;
     void zero_signal();
     void get_note();
     void trigger_note_on_effects();
     void untrigger_note_on_effects();
     void apply_effects();
     void add_oscillator();
-
+    void apply_filter_lfo();
   public:
     Synth(/* args */);
     ~Synth();

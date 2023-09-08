@@ -4,7 +4,7 @@
 LowPassFilter::LowPassFilter() {
     // todo: defaults
     m_freq = 200.f / SAMPLE_RATE;
-    m_q = 0.707f;
+    m_q = 1.0f;//0.707f;
     m_order = 0;
 }
 

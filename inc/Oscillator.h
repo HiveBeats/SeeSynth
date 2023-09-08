@@ -31,5 +31,5 @@ class Oscillator {
     float GetFreq() { return m_freq; }
     void SetFreq(float freq);
     void Reset();
-    float GenerateSample(float duration);
+    float GenerateSample();
 };

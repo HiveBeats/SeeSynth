@@ -45,7 +45,7 @@ void Oscillator::SetFreq(float freq) {
     m_phase_dt = (this->*m_dt_function)(freq);
 }
 
-float Oscillator::GenerateSample(float duration) {
+float Oscillator::GenerateSample() {
     return (this->*m_osc_function)() * m_volume;
 }
 
