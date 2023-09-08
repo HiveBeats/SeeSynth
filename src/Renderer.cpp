@@ -190,7 +190,8 @@ void Renderer::draw_second_panel(Rectangle& bounds) {
     GuiPanel(bounds, "");
 }
 
-float Renderer::draw_filter_panel(Filter* filter, FilterGuiState& gui_filter, const Rectangle& panel_bounds) {
+float Renderer::draw_filter_panel(Filter* filter, FilterGuiState& gui_filter,
+                                  const Rectangle& panel_bounds) {
     float panel_y_offset = 0;
 
     // Draw Filter Panel
@@ -211,11 +212,11 @@ float Renderer::draw_filter_panel(Filter* filter, FilterGuiState& gui_filter, co
                          .height = 25.f};
 
     // Frequency slider
-    float freq = gui_filter.freq;
+    float freq = log10f(gui_filter.freq);
     char freq_slider_label[32];
-    snprintf(freq_slider_label, 10, "%.1f hz", freq);
-    freq = GuiSlider(el_rect, freq_slider_label, "", freq, 0.0f, 16000.f);
-    gui_filter.freq = freq;
+    snprintf(freq_slider_label, 10, "%.1f hz", powf(10.f, freq));
+    freq = GuiSlider(el_rect, freq_slider_label, "", freq, 0.f, 4.f);
+    gui_filter.freq = powf(10.f, freq);
     el_rect.y += el_rect.height + el_spacing;
 
     // Resonance slider
