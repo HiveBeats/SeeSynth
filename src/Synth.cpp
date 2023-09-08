@@ -71,7 +71,7 @@ void Synth::Trigger(Note input) {
 }
 
 void Synth::apply_filter_lfo() {
-    float dt = m_lfo->GenerateSample();
+    float dt = m_lfo->Process();
     Filter* filter = (Filter*)m_effects[1];
     float freq = filter->GetFreq();
     //todo: check formula
