@@ -5,12 +5,9 @@ Filter::Filter(/* args */) {}
 
 Filter::~Filter() {}
 
-Filter::Normals Filter::calculate_normals() {
-    Filter::Normals res;
-    res.V = powf(10, fabs(m_order) / 20.0);
-    res.K = tanf(M_PI * m_freq);
-
-    return res;
+void Filter::calculate_normals() {
+    m_v = powf(10, fabs(m_order) / 20.0);
+    m_k = tanf(M_PI * m_freq);
 }
 
 void Filter::Trigger() {}
