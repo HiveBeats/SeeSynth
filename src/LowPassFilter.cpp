@@ -1,15 +1,26 @@
 #include "LowPassFilter.h"
 #include "Settings.h"
 
-LowPassFilter::LowPassFilter(/* args */) {
-    //todo: defaults
+LowPassFilter::LowPassFilter() {
+    // todo: defaults
     m_freq = 200.f / SAMPLE_RATE;
-    m_q = 0.707; 
+    m_q = 0.707f;
     m_order = 0;
 }
 
-LowPassFilter::~LowPassFilter() {
+LowPassFilter::LowPassFilter(float freq, float res, float q) {
+    m_freq = freq / SAMPLE_RATE;
+    m_q = res;
+    m_order = q;
 }
+
+LowPassFilter::LowPassFilter(Filter* filter) {
+    m_freq = filter->GetFreq();
+    m_q = filter->GetRes();
+    m_order = filter->GetPeakGain();
+}
+
+LowPassFilter::~LowPassFilter() {}
 
 void LowPassFilter::calculate_coefficients() {
     Filter::Normals base = calculate_normals();

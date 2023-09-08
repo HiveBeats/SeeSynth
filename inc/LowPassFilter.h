@@ -2,12 +2,13 @@
 
 #include "Filter.h"
 
-class LowPassFilter: public Filter
-{
-protected:
+class LowPassFilter : public Filter {
+  protected:
     void calculate_coefficients() override;
-public:
-    LowPassFilter(/* args */);
+
+  public:
+    LowPassFilter();
+    LowPassFilter(Filter* filter);
+    LowPassFilter(float freq, float res, float q);
     ~LowPassFilter();
 };
-

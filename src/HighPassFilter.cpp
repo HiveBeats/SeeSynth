@@ -1,10 +1,16 @@
 #include "HighPassFilter.h"
 
-HighPassFilter::HighPassFilter(/* args */) {
+HighPassFilter::HighPassFilter(/* args */) {}
+
+HighPassFilter::HighPassFilter(Filter* filter) {
+    m_freq = filter->GetFreq();
+    m_q = filter->GetRes();
+    m_order = filter->GetPeakGain();
 }
 
-HighPassFilter::~HighPassFilter() {
-}
+HighPassFilter::HighPassFilter(float freq, float res, float q) {}
+
+HighPassFilter::~HighPassFilter() {}
 
 void HighPassFilter::calculate_coefficients() {
     Filter::Normals base = calculate_normals();

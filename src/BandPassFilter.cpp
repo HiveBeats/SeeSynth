@@ -1,10 +1,16 @@
 #include "BandPassFilter.h"
 
-BandPassFilter::BandPassFilter(/* args */) {
+BandPassFilter::BandPassFilter(/* args */) {}
+
+BandPassFilter::BandPassFilter(Filter* filter) {
+    m_freq = filter->GetFreq();
+    m_q = filter->GetRes();
+    m_order = filter->GetPeakGain();
 }
 
-BandPassFilter::~BandPassFilter() {
-}
+BandPassFilter::BandPassFilter(float freq, float res, float q) {}
+
+BandPassFilter::~BandPassFilter() {}
 
 void BandPassFilter::calculate_coefficients() {
     Filter::Normals base = calculate_normals();

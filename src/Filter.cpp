@@ -1,11 +1,9 @@
 #include "Filter.h"
 #include "Settings.h"
 
-Filter::Filter(/* args */) {
-}
+Filter::Filter(/* args */) {}
 
-Filter::~Filter() {
-}
+Filter::~Filter() {}
 
 Filter::Normals Filter::calculate_normals() {
     Filter::Normals res;
@@ -15,11 +13,9 @@ Filter::Normals Filter::calculate_normals() {
     return res;
 }
 
-void Filter::Trigger() {
-}
+void Filter::Trigger() {}
 
-void Filter::Release() {
-}
+void Filter::Release() {}
 
 float Filter::Process(float in) {
     float out = in * m_a0 + m_z1;
@@ -29,8 +25,9 @@ float Filter::Process(float in) {
 }
 
 void Filter::Process(std::vector<float>& samples) {
-    // todo: that will not work for ADSR-controlled filter. So, let's calculate all the possible frequency values into array/dictionary
-    // then just lookup for each sample
+    // todo: that will not work for ADSR-controlled filter. So, let's calculate
+    // all the possible frequency values into array/dictionary then just lookup
+    // for each sample
     calculate_coefficients();
     for (std::size_t i = 0; i < samples.size(); i++) {
         samples[i] = Process(samples[i]);
