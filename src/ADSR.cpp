@@ -3,14 +3,12 @@
 #include "Settings.h"
 
 ADSR::ADSR(/* args */) {
-    m_parameters.attack_time = 1.f;
-    m_parameters.decay_time = 0.4f;
-    m_parameters.sustain_level = 0.6f;
-    m_parameters.release_time = 0.8f;
+    m_attack_time = 1.f;
+    m_decay_time = 0.4f;
+    m_sustain_level = 0.6f;
+    m_release_time = 0.8f;
     m_ramp = new Ramp(0, SAMPLE_RATE);
 }
-
-ADSR::ADSR(ADSRParameters param) { m_parameters = param; }
 
 ADSR::~ADSR() { delete m_ramp; }
 
@@ -31,8 +29,7 @@ void ADSR::recheck_state() {
         case sAttack:
             if (is_attack_elapsed()) {
                 m_state = sDecay;
-                m_ramp->RampTo(m_parameters.sustain_level,
-                               m_parameters.decay_time);
+                m_ramp->RampTo(m_sustain_level, m_decay_time);
             }
             break;
         case sDecay:
@@ -58,7 +55,7 @@ void ADSR::process_sample(float* sample) {
     } else if (m_state == sDecay) {
         (*sample) = (*sample) * m_ramp->Process();
     } else if (m_state == sSustain) {
-        (*sample) = (*sample) * m_parameters.sustain_level;
+        (*sample) = (*sample) * m_sustain_level;
     } else if (m_state == sRelease) {
         (*sample) = (*sample) * m_ramp->Process();
     }
@@ -72,13 +69,13 @@ void ADSR::Trigger() {
         m_state = sAttack;
     };
 
-    m_ramp->RampTo(1, m_parameters.attack_time);
+    m_ramp->RampTo(1, m_attack_time);
 }
 
 void ADSR::Release() {
     write_log("Unset ADSR\n");
     m_state = sRelease;
-    m_ramp->RampTo(0, m_parameters.release_time);
+    m_ramp->RampTo(0, m_release_time);
 }
 
 void ADSR::Process(std::vector<float>& samples) {
@@ -90,8 +87,8 @@ void ADSR::Process(std::vector<float>& samples) {
 
 void ADSR::SetParameters(float attack, float decay, float sustain,
                          float release) {
-    m_parameters.attack_time = attack;
-    m_parameters.decay_time = decay;
-    m_parameters.sustain_level = sustain;
-    m_parameters.release_time = release;
+    m_attack_time = attack;
+    m_decay_time = decay;
+    m_sustain_level = sustain;
+    m_release_time = release;
 }

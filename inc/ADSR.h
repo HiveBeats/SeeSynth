@@ -3,18 +3,14 @@
 #include "Ramp.h"
 #include <cstddef>
 
-struct ADSRParameters {
-    float attack_time;   // Attack time in seconds
-    float decay_time;    // Decay time in seconds
-    float sustain_level; // Sustain level (0 to 1)
-    float release_time;
-};
-
-enum ADSRState { sOff, sAttack, sDecay, sSustain, sRelease };
-
 class ADSR : public Effect {
+    enum ADSRState { sOff, sAttack, sDecay, sSustain, sRelease };
+
   private:
-    ADSRParameters m_parameters;
+    float m_attack_time;
+    float m_decay_time;
+    float m_sustain_level;
+    float m_release_time;
     ADSRState m_state;
     Ramp* m_ramp;
 
@@ -26,7 +22,6 @@ class ADSR : public Effect {
 
   public:
     ADSR(/* args */);
-    ADSR(ADSRParameters param);
     ~ADSR();
     void Trigger() override;
     void Release() override;
