@@ -185,6 +185,73 @@ void Renderer::draw_adsr_panel(ADSR* adsr, ADSRGuiState& gui_adsr,
                         gui_adsr.release);
 }
 
+void Renderer::draw_second_panel(Rectangle& bounds) {
+    bounds.x += bounds.width;
+    GuiPanel(bounds, "");
+}
+
+float Renderer::DrawFilterPanel(Synth& synth, FilterGuiState& gui_filter,
+                                  const Rectangle& panel_bounds) {
+#define FILTER_TYPE_OPTIONS "LP;BP;HP"
+    Filter* filter = synth.GetFilter();
+    float panel_y_offset = 0;
+
+    // Draw Filter Panel
+    const int osc_panel_width = panel_bounds.width - 20;
+    const int osc_panel_height = 100;
+    const int osc_panel_x = panel_bounds.x + 10;
+    const int osc_panel_y = panel_bounds.y + 50;
+    panel_y_offset += osc_panel_height + 5;
+    GuiPanel((Rectangle){(float)osc_panel_x, (float)osc_panel_y,
+                         (float)osc_panel_width, (float)osc_panel_height},
+             "Filter");
+
+    const float slider_padding = 50.f;
+    const float el_spacing = 5.f;
+    Rectangle el_rect = {.x = (float)osc_panel_x + slider_padding + 30,
+                         .y = (float)osc_panel_y + 10,
+                         .width = (float)osc_panel_width - (slider_padding * 2),
+                         .height = 25.f};
+
+    // Frequency slider
+    float freq = log10f(gui_filter.freq);
+    char freq_slider_label[32];
+    snprintf(freq_slider_label, 10, "%.1f hz", powf(10.f, freq));
+    freq = GuiSlider(el_rect, freq_slider_label, "", freq, 0.f, 4.f);
+    gui_filter.freq = powf(10.f, freq);
+    el_rect.y += el_rect.height + el_spacing;
+
+    //todo: implement that when Res will be fixed
+    // Resonance slider
+    // float res = gui_filter.res;
+    // char res_slider_label[32];
+    // snprintf(res_slider_label, 7, "%.1f u", res);
+    // res = GuiSlider(el_rect, res_slider_label, "", res, 0.0f, 1.0f);
+    // gui_filter.res = res;
+    // el_rect.y += el_rect.height + el_spacing;
+
+    // Shape select
+    int shape_index = (int)(gui_filter.type);
+    bool is_dropdown_click =
+        GuiDropdownBox(el_rect, FILTER_TYPE_OPTIONS,
+                        &shape_index, gui_filter.is_dropdown_open);
+
+    if (is_dropdown_click) {
+        write_log("Dropdown clicked!\n");
+        gui_filter.is_dropdown_open = !gui_filter.is_dropdown_open;
+        gui_filter.type = (FilterType)(shape_index);
+        // APPLY STATE TO REAL SYNTH
+        synth.SetFilter(gui_filter.type);
+    }
+
+    // apply values to real one
+    // todo: thrid (order) parameter
+    // todo: why resonance changing does not work?
+    filter->SetParameters(gui_filter.freq, filter->GetRes(), filter->GetPeakGain());
+
+    return panel_y_offset;
+}
+
 void Renderer::draw_ui(Synth& synth, SynthGuiState& synth_gui) {
     Rectangle panel_bounds = {.x = 0,
                               .y = 0,
@@ -200,4 +267,7 @@ void Renderer::draw_ui(Synth& synth, SynthGuiState& synth_gui) {
     draw_adsr_panel(synth.GetADSR(), synth_gui.adsr, panel_bounds,
                     panel_y_offset);
     draw_oscillators_shape_inputs(oscillators, gui_oscillators);
+
+    draw_second_panel(panel_bounds);
+    DrawFilterPanel(synth, synth_gui.filter, panel_bounds);
 }

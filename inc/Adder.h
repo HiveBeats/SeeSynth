@@ -13,7 +13,7 @@ struct Adder {
         for (size_t i = 0; i < sample_count; i++) {
             float sample = 0.0f;
             for (Oscillator* osc : oscillators) {
-                sample += osc->GenerateSample(1.f);
+                sample += osc->Process();
             }
 
             signal[i] = sample;

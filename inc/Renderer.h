@@ -1,5 +1,6 @@
 #pragma once
 #include "ADSR.h"
+#include "Filter.h"
 #include "Synth.h"
 #include "SynthGuiState.h"
 #include "raylib.h"
@@ -19,6 +20,9 @@ class Renderer {
     void draw_signal(Synth& synth, SynthGuiState& synth_gui);
     void draw_adsr_panel(ADSR* adsr, ADSRGuiState& gui_adsr,
                          const Rectangle& panel_bounds, float panel_y_offset);
+    void draw_second_panel(Rectangle& bounds);
+    float DrawFilterPanel(Synth& synth, FilterGuiState& gui_filter,
+                            const Rectangle& panel_bounds);
 
   public:
     Renderer(/* args */);
