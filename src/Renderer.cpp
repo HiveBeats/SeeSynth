@@ -190,7 +190,7 @@ void Renderer::draw_second_panel(Rectangle& bounds) {
     GuiPanel(bounds, "");
 }
 
-float Renderer::draw_filter_panel(Synth& synth, FilterGuiState& gui_filter,
+float Renderer::DrawFilterPanel(Synth& synth, FilterGuiState& gui_filter,
                                   const Rectangle& panel_bounds) {
 #define FILTER_TYPE_OPTIONS "LP;BP;HP"
     Filter* filter = synth.GetFilter();
@@ -198,7 +198,7 @@ float Renderer::draw_filter_panel(Synth& synth, FilterGuiState& gui_filter,
 
     // Draw Filter Panel
     const int osc_panel_width = panel_bounds.width - 20;
-    const int osc_panel_height = 120;
+    const int osc_panel_height = 100;
     const int osc_panel_x = panel_bounds.x + 10;
     const int osc_panel_y = panel_bounds.y + 50;
     panel_y_offset += osc_panel_height + 5;
@@ -221,15 +221,15 @@ float Renderer::draw_filter_panel(Synth& synth, FilterGuiState& gui_filter,
     gui_filter.freq = powf(10.f, freq);
     el_rect.y += el_rect.height + el_spacing;
 
+    //todo: implement that when Res will be fixed
     // Resonance slider
-    float res = gui_filter.res;
-    char res_slider_label[32];
-    snprintf(res_slider_label, 7, "%.1f u", res);
-    res = GuiSlider(el_rect, res_slider_label, "", res, 0.0f, 1.0f);
-    gui_filter.res = res;
-    el_rect.y += el_rect.height + el_spacing;
+    // float res = gui_filter.res;
+    // char res_slider_label[32];
+    // snprintf(res_slider_label, 7, "%.1f u", res);
+    // res = GuiSlider(el_rect, res_slider_label, "", res, 0.0f, 1.0f);
+    // gui_filter.res = res;
+    // el_rect.y += el_rect.height + el_spacing;
 
-    // todo: filter type
     // Shape select
     int shape_index = (int)(gui_filter.type);
     bool is_dropdown_click =
@@ -247,7 +247,7 @@ float Renderer::draw_filter_panel(Synth& synth, FilterGuiState& gui_filter,
     // apply values to real one
     // todo: thrid (order) parameter
     // todo: why resonance changing does not work?
-    filter->SetParameters(gui_filter.freq, 0.707, 0);
+    filter->SetParameters(gui_filter.freq, filter->GetRes(), filter->GetPeakGain());
 
     return panel_y_offset;
 }
@@ -269,5 +269,5 @@ void Renderer::draw_ui(Synth& synth, SynthGuiState& synth_gui) {
     draw_oscillators_shape_inputs(oscillators, gui_oscillators);
 
     draw_second_panel(panel_bounds);
-    draw_filter_panel(synth, synth_gui.filter, panel_bounds);
+    DrawFilterPanel(synth, synth_gui.filter, panel_bounds);
 }
