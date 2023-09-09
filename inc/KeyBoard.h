@@ -7,7 +7,7 @@
 
 class KeyBoard {
   private:
-    static int get_semitone_shift_internal(const char* root_note,
+    static int GetSemitoneShiftInternal(const char* root_note,
                                            char* target_note) {
         const char* pitch_classes[12] = {"C",  "C#", "D",  "D#", "E",  "F",
                                          "F#", "G",  "G#", "A",  "A#", "B"};
@@ -65,7 +65,7 @@ class KeyBoard {
         char* target_note_cstr = new char[target_note.length() + 1];
         strcpy(target_note_cstr, target_note.c_str());
 
-        int result = get_semitone_shift_internal("A4", target_note_cstr);
+        int result = GetSemitoneShiftInternal("A4", target_note_cstr);
 
         delete[] target_note_cstr;
         return result;
