@@ -4,6 +4,7 @@
 #include "OscillatorType.h"
 #include "Settings.h"
 #include "LowPassFilter.h"
+#include "FilterFactory.h"
 
 Synth::Synth(/* args */) {
     m_lfo = new Oscillator(OscillatorType::Sine, 5.f, VOLUME);
@@ -70,6 +71,7 @@ void Synth::Trigger(Note input) {
     trigger_note_on_effects();
 }
 
+// todo: fix this
 void Synth::apply_filter_lfo() {
     float dt = m_lfo->Process();
     Filter* filter = (Filter*)m_effects[1];
@@ -93,3 +95,10 @@ void Synth::Release() {
 }
 
 void Synth::AddEffect(Effect* fx) { m_effects.push_back(fx); }
+
+void Synth::SetFilter(FilterType type) {
+    Filter* oldFilter = this->GetFilter();
+    Filter* newFilter = FilterFactory::CreateFilter(oldFilter, type);
+    delete oldFilter;
+    m_effects[1] = newFilter;
+}

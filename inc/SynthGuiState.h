@@ -2,6 +2,7 @@
 #include "OscillatorType.h"
 #include "raygui.h"
 #include <vector>
+#include "Filter.h"
 
 struct OscillatorGuiState {
     float volume;
@@ -20,8 +21,9 @@ struct ADSRGuiState {
 
 struct FilterGuiState {
     float freq;
-    float res;
-    //todo: type
+    float res; //todo: res
+    FilterType type;
+    bool is_dropdown_open;
 };
 
 struct SynthGuiState {

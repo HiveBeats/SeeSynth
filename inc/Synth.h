@@ -35,4 +35,5 @@ class Synth {
     const bool& GetIsNoteTriggered() { return is_note_triggered; }
     ADSR* GetADSR() { return (ADSR*)m_effects[0]; }
     Filter* GetFilter() { return (Filter*)m_effects[1]; }
+    void SetFilter(FilterType type);
 };

@@ -190,8 +190,10 @@ void Renderer::draw_second_panel(Rectangle& bounds) {
     GuiPanel(bounds, "");
 }
 
-float Renderer::draw_filter_panel(Filter* filter, FilterGuiState& gui_filter,
+float Renderer::draw_filter_panel(Synth& synth, FilterGuiState& gui_filter,
                                   const Rectangle& panel_bounds) {
+#define FILTER_TYPE_OPTIONS "LP;BP;HP"
+    Filter* filter = synth.GetFilter();
     float panel_y_offset = 0;
 
     // Draw Filter Panel
@@ -228,6 +230,24 @@ float Renderer::draw_filter_panel(Filter* filter, FilterGuiState& gui_filter,
     el_rect.y += el_rect.height + el_spacing;
 
     // todo: filter type
+    // Shape select
+    int shape_index = (int)(gui_filter.type);
+    bool is_dropdown_click =
+        GuiDropdownBox(el_rect, FILTER_TYPE_OPTIONS,
+                        &shape_index, gui_filter.is_dropdown_open);
+
+    if (is_dropdown_click) {
+        write_log("Dropdown clicked!\n");
+        gui_filter.is_dropdown_open = !gui_filter.is_dropdown_open;
+        gui_filter.type = (FilterType)(shape_index);
+        // APPLY STATE TO REAL SYNTH
+        if (!filter->IsSameFilterType(gui_filter.type)) {
+            synth.SetFilter(gui_filter.type);
+        }
+        //filter.SetType(ui_osc->waveshape);
+    }
+    // if (gui_filter.is_dropdown_open)
+    //     break;
 
     // apply values to real one
     // todo: thrid (order) parameter
@@ -254,5 +274,5 @@ void Renderer::draw_ui(Synth& synth, SynthGuiState& synth_gui) {
     draw_oscillators_shape_inputs(oscillators, gui_oscillators);
 
     draw_second_panel(panel_bounds);
-    draw_filter_panel(synth.GetFilter(), synth_gui.filter, panel_bounds);
+    draw_filter_panel(synth, synth_gui.filter, panel_bounds);
 }

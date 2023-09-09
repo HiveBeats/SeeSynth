@@ -1,6 +1,12 @@
 #pragma once
 #include "Effect.h"
 
+enum FilterType {
+    LowPass,
+    BandPass,
+    HighPass
+};
+
 class Filter : public Effect {
   protected:
     float m_freq;  // cutoff frequency
@@ -16,7 +22,7 @@ class Filter : public Effect {
 
   public:
     Filter(/* args */);
-    ~Filter();
+    virtual ~Filter();
     void Trigger() override;
     void Release() override;
     float Process(float in);
@@ -25,4 +31,5 @@ class Filter : public Effect {
     float GetFreq() { return m_freq; }
     float GetRes() { return m_q; }
     float GetPeakGain() { return m_norm; }
+    virtual bool IsSameFilterType(FilterType type){ return false; };
 };

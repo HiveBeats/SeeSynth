@@ -10,4 +10,5 @@ class BandPassFilter : public Filter {
     BandPassFilter(float freq, float res, float q);
     BandPassFilter(/* args */);
     ~BandPassFilter();
+    bool IsSameFilterType(FilterType type) override { return type == BandPass; };
 };

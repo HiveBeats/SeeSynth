@@ -21,7 +21,7 @@ class Renderer {
     void draw_adsr_panel(ADSR* adsr, ADSRGuiState& gui_adsr,
                          const Rectangle& panel_bounds, float panel_y_offset);
     void draw_second_panel(Rectangle& bounds);
-    float draw_filter_panel(Filter* filter, FilterGuiState& gui_filter,
+    float draw_filter_panel(Synth& synth, FilterGuiState& gui_filter,
                             const Rectangle& panel_bounds);
 
   public:
