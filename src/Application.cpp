@@ -4,8 +4,8 @@
 #include <string>
 
 Application::Application(/* args */) {
-    init_synth();
-    init_audio();
+    InitSynth();
+    InitAudio();
 }
 
 Application::~Application() {
@@ -19,7 +19,7 @@ Application::~Application() {
     }
 }
 
-void Application::init_audio() {
+void Application::InitAudio() {
     m_sound_played_count = 0;
 
     InitAudioDevice();
@@ -31,7 +31,7 @@ void Application::init_audio() {
     PlayAudioStream(m_synth_stream);
 }
 
-void Application::init_synth() {
+void Application::InitSynth() {
     std::string* nameString = new std::string(std::string(new char[3]));
     m_current_note = new Note{.length = 1, .name = (*nameString)};
     m_current_note->name.assign("G4");
@@ -50,7 +50,7 @@ void Application::init_synth() {
     }
 }
 
-bool Application::detect_note_pressed(Note* note) {
+bool Application::DetectNotePressed(Note* note) {
     std::size_t is_pressed = 0;
     note->length = 8;
     if (IsKeyDown(KEY_A)) {
@@ -89,8 +89,8 @@ bool is_note_up() {
            IsKeyUp(KEY_D) || IsKeyUp(KEY_E) || IsKeyUp(KEY_F) || IsKeyUp(KEY_G);
 }
 
-void Application::update_on_note_input() {
-    if (detect_note_pressed(m_current_note)) {
+void Application::UpdateOnNoteInput() {
+    if (DetectNotePressed(m_current_note)) {
         if (!m_synth.GetIsNoteTriggered()) {
             m_synth.Trigger((*m_current_note));
         }
@@ -103,9 +103,9 @@ void Application::update_on_note_input() {
 }
 
 // Play ring-buffered audio
-void Application::play_buffered_audio() {
+void Application::PlayBufferedAudio() {
     if (IsAudioStreamProcessed(m_synth_stream)) {
-        update_on_note_input();
+        UpdateOnNoteInput();
         UpdateAudioStream(m_synth_stream, m_synth.GetOutSignal().data(),
                           STREAM_BUFFER_SIZE);
     }
@@ -114,7 +114,7 @@ void Application::play_buffered_audio() {
 void Application::Run() {
     // Main game loop
     while (!WindowShouldClose()) {
-        play_buffered_audio();
+        PlayBufferedAudio();
         m_renderer.Draw(m_synth, m_synth_gui_state);
     }
 }

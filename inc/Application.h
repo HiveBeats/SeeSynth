@@ -13,11 +13,11 @@ class Application {
     int m_sound_played_count;
     Note* m_current_note;
     Renderer m_renderer;
-    bool detect_note_pressed(Note* note);
-    void init_synth();
-    void init_audio();
-    void update_on_note_input();
-    void play_buffered_audio();
+    bool DetectNotePressed(Note* note);
+    void InitSynth();
+    void InitAudio();
+    void UpdateOnNoteInput();
+    void PlayBufferedAudio();
 
   public:
     Application(/* args */);
