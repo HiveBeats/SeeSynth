@@ -3,7 +3,7 @@
 
 class HighPassFilter : public Filter {
   private:
-    void calculate_coefficients() override;
+    void CalculateCoefficients() override;
 
   public:
     HighPassFilter();

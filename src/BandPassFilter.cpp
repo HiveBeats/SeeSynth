@@ -12,8 +12,8 @@ BandPassFilter::BandPassFilter(float freq, float res, float q) {}
 
 BandPassFilter::~BandPassFilter() {}
 
-void BandPassFilter::calculate_coefficients() {
-    calculate_normals();
+void BandPassFilter::CalculateCoefficients() {
+    CalculateNormals();
     m_norm = 1 / (1 + m_k / m_q + m_k * m_k);
     m_a0 = m_k / m_q * m_norm;
     m_a1 = 0;

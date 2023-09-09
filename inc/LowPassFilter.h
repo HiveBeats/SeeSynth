@@ -4,7 +4,7 @@
 
 class LowPassFilter : public Filter {
   protected:
-    void calculate_coefficients() override;
+    void CalculateCoefficients() override;
 
   public:
     LowPassFilter();

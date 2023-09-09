@@ -17,8 +17,8 @@ class Filter : public Effect {
     float m_a0, m_a1, m_a2, m_b1, m_b2;
     float m_z1, m_z2;
 
-    void calculate_normals();
-    virtual void calculate_coefficients(){};
+    void CalculateNormals();
+    virtual void CalculateCoefficients(){};
 
   public:
     Filter(/* args */);

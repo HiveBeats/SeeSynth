@@ -3,7 +3,7 @@
 
 class BandPassFilter : public Filter {
   private:
-    void calculate_coefficients() override;
+    void CalculateCoefficients() override;
 
   public:
     BandPassFilter(Filter* filter);

@@ -5,7 +5,7 @@ Filter::Filter(/* args */) {}
 
 Filter::~Filter() {}
 
-void Filter::calculate_normals() {
+void Filter::CalculateNormals() {
     m_v = powf(10, fabs(m_order) / 20.0);
     m_k = tanf(M_PI * m_freq);
 }
@@ -16,7 +16,7 @@ void Filter::Release() {}
 
 float Filter::Process(float in) {
     // may move to a compile-time dictionary calculation, if needed
-    calculate_coefficients();
+    CalculateCoefficients();
     float out = in * m_a0 + m_z1;
     m_z1 = in * m_a1 + m_z2 - m_b1 * out;
     m_z2 = in * m_a2 - m_b2 * out;

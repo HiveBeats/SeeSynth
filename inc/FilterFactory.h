@@ -5,22 +5,22 @@
 #include "HighPassFilter.h"
 
 struct FilterFactory {
-    static Filter* CreateFilter(Filter* oldFilter, FilterType newType) {
-        Filter* newFilter;
-        switch (newType) {
+    static Filter* CreateFilter(Filter* old_filter, FilterType new_type) {
+        Filter* new_filter;
+        switch (new_type) {
         case LowPass:
-            newFilter = new LowPassFilter(oldFilter);
+            new_filter = new LowPassFilter(old_filter);
             break;
         case BandPass:
-            newFilter = new BandPassFilter(oldFilter);
+            new_filter = new BandPassFilter(old_filter);
             break;
         case HighPass:
-            newFilter = new HighPassFilter(oldFilter);
+            new_filter = new HighPassFilter(old_filter);
             break;
         default:
             break;
         }
-        return newFilter;
+        return new_filter;
     }
 
     static Filter* GetDefaultFilter() {

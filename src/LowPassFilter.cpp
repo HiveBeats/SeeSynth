@@ -22,8 +22,8 @@ LowPassFilter::LowPassFilter(Filter* filter) {
 
 LowPassFilter::~LowPassFilter() {}
 
-void LowPassFilter::calculate_coefficients() {
-    calculate_normals();
+void LowPassFilter::CalculateCoefficients() {
+    CalculateNormals();
     m_norm = 1 / (1 + m_k / m_q + m_k * m_k);
     m_a0 = m_k * m_k * m_norm;
     m_a1 = 2 * m_a0;

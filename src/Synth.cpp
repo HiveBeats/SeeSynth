@@ -96,10 +96,10 @@ void Synth::Release() {
 void Synth::AddEffect(Effect* fx) { m_effects.push_back(fx); }
 
 void Synth::SetFilter(FilterType type) {
-    Filter* oldFilter = this->GetFilter();
-    if (!oldFilter->IsSameFilterType(type)) {
-        Filter* newFilter = FilterFactory::CreateFilter(oldFilter, type);
-        delete oldFilter;
-        m_effects[1] = newFilter;
+    Filter* old_filter = this->GetFilter();
+    if (!old_filter->IsSameFilterType(type)) {
+        Filter* new_filter = FilterFactory::CreateFilter(old_filter, type);
+        delete old_filter;
+        m_effects[1] = new_filter;
     }
 }

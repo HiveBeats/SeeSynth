@@ -12,8 +12,8 @@ HighPassFilter::HighPassFilter(float freq, float res, float q) {}
 
 HighPassFilter::~HighPassFilter() {}
 
-void HighPassFilter::calculate_coefficients() {
-    calculate_normals();
+void HighPassFilter::CalculateCoefficients() {
+    CalculateNormals();
     m_norm = 1 / (1 + m_k / m_q + m_k * m_k);
     m_a0 = 1 * m_norm;
     m_a1 = -2 * m_a0;
