@@ -22,4 +22,8 @@ struct FilterFactory {
         }
         return newFilter;
     }
+
+    static Filter* GetDefaultFilter() {
+        return new LowPassFilter();
+    }
 };

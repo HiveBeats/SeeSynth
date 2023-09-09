@@ -15,6 +15,7 @@ void Filter::Trigger() {}
 void Filter::Release() {}
 
 float Filter::Process(float in) {
+    // may move to a compile-time dictionary calculation, if needed
     calculate_coefficients();
     float out = in * m_a0 + m_z1;
     m_z1 = in * m_a1 + m_z2 - m_b1 * out;
@@ -23,10 +24,6 @@ float Filter::Process(float in) {
 }
 
 void Filter::Process(std::vector<float>& samples) {
-    // todo: that will not work for ADSR-controlled filter. So, let's calculate
-    // all the possible frequency values into array/dictionary then just lookup
-    // for each sample
-    
     for (std::size_t i = 0; i < samples.size(); i++) {
         samples[i] = Process(samples[i]);
     }

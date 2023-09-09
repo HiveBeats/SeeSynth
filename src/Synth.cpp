@@ -3,7 +3,6 @@
 #include "Logger.h"
 #include "OscillatorType.h"
 #include "Settings.h"
-#include "LowPassFilter.h"
 #include "FilterFactory.h"
 
 Synth::Synth(/* args */) {
@@ -11,7 +10,7 @@ Synth::Synth(/* args */) {
     add_oscillator();
     add_oscillator();
     AddEffect(new ADSR());
-    AddEffect(new LowPassFilter());
+    AddEffect(FilterFactory::GetDefaultFilter());
     for (size_t i = 0; i < STREAM_BUFFER_SIZE; i++) {
         float sample = 0.0f;
         m_out_signal.push_back(sample);
@@ -98,7 +97,9 @@ void Synth::AddEffect(Effect* fx) { m_effects.push_back(fx); }
 
 void Synth::SetFilter(FilterType type) {
     Filter* oldFilter = this->GetFilter();
-    Filter* newFilter = FilterFactory::CreateFilter(oldFilter, type);
-    delete oldFilter;
-    m_effects[1] = newFilter;
+    if (!oldFilter->IsSameFilterType(type)) {
+        Filter* newFilter = FilterFactory::CreateFilter(oldFilter, type);
+        delete oldFilter;
+        m_effects[1] = newFilter;
+    }
 }

@@ -241,13 +241,8 @@ float Renderer::draw_filter_panel(Synth& synth, FilterGuiState& gui_filter,
         gui_filter.is_dropdown_open = !gui_filter.is_dropdown_open;
         gui_filter.type = (FilterType)(shape_index);
         // APPLY STATE TO REAL SYNTH
-        if (!filter->IsSameFilterType(gui_filter.type)) {
-            synth.SetFilter(gui_filter.type);
-        }
-        //filter.SetType(ui_osc->waveshape);
+        synth.SetFilter(gui_filter.type);
     }
-    // if (gui_filter.is_dropdown_open)
-    //     break;
 
     // apply values to real one
     // todo: thrid (order) parameter
