@@ -56,15 +56,14 @@ void Synth::UntriggerNoteOnEffects() {
 
 void Synth::AddOscillator() {
     m_oscillators.push_back(
-        new Oscillator(OscillatorType::Sine, 440.f, VOLUME));
+        new Oscillator(OscillatorType::Sine, 0.0f, VOLUME));
 }
 
 void Synth::Trigger(Note input) {
     int semitone_shift = KeyBoard::GetSemitoneShift(input.name);
-    float hz = KeyBoard::GetHzBySemitone(semitone_shift);
 
     for (Oscillator* osc : m_oscillators) {
-        osc->SetFreq(hz);
+        osc->SetKey(semitone_shift);
     }
     is_note_triggered = true;
     TriggerNoteOnEffects();

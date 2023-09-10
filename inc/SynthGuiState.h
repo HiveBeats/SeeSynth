@@ -6,7 +6,7 @@
 
 struct OscillatorGuiState {
     float volume;
-    float freq; // todo: remove or change to pitch shift
+    float fine;
     OscillatorType waveshape;
     bool is_dropdown_open;
     Rectangle shape_dropdown_rect;

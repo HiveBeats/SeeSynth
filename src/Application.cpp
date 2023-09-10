@@ -43,7 +43,7 @@ void Application::InitSynth() {
         assert(osc);
 
         OscillatorGuiState* ui =
-            new OscillatorGuiState{.freq = osc->GetFreq(),
+            new OscillatorGuiState{.fine = osc->GetFine(),
                                    .waveshape = osc->GetType(),
                                    .volume = osc->GetVolume()};
         m_synth_gui_state.oscillators.push_back(ui);
