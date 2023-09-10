@@ -4,9 +4,10 @@
 #include "OscillatorType.h"
 #include "Settings.h"
 #include "FilterFactory.h"
+#include "LFO.h"
 
 Synth::Synth(/* args */) {
-    m_lfo = new Oscillator(OscillatorType::Sine, 0.f, VOLUME);
+    m_lfo = new LFO();
     AddOscillator();
     AddOscillator();
     AddEffect(new ADSR());

@@ -9,9 +9,7 @@ class Oscillator {
     float m_key;
     float m_volume;
     float m_phase;
-    float m_phase_dt;
     float (Oscillator::*m_osc_function)(void);
-    float (Oscillator::*m_dt_function)(float freq);
     void SineOscPhaseIncr();
     void SawOscPhaseIncr();
     float CalcSawPhaseDelta(float freq);
@@ -21,6 +19,10 @@ class Oscillator {
     float SquareOsc();
     float Sign(float v);
     float SineOsc();
+
+  protected:
+    float m_phase_dt;
+    float (Oscillator::*m_dt_function)(float freq);
 
   public:
     Oscillator(OscillatorType osc, float fine, float volume);
