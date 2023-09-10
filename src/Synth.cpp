@@ -82,7 +82,7 @@ void Synth::ApplyFilterLfo() {
 void Synth::Process() {
     //todo: on each sample. 
     //in order to do that, we need to move to per-sample processing
-    ApplyFilterLfo();
+    //ApplyFilterLfo();
     GetNote();
     ApplyEffects();
 }
