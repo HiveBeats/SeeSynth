@@ -1,9 +1,9 @@
 #pragma once
-#include "Effect.h"
+#include "IEffect.h"
 #include "Ramp.h"
 #include <cstddef>
 
-class ADSR : public Effect {
+class ADSR : public IEffect {
     enum ADSRState { sOff, sAttack, sDecay, sSustain, sRelease };
 
   private:
@@ -14,11 +14,11 @@ class ADSR : public Effect {
     ADSRState m_state;
     Ramp* m_ramp;
 
-    void process_sample(float* sample);
-    bool is_attack_elapsed();
-    bool is_decay_elapsed();
-    bool is_release_elapsed();
-    void recheck_state();
+    void ProcessSample(float* sample);
+    bool IsAttackElapsed();
+    bool IsDecayElapsed();
+    bool IsReleaseElapsed();
+    void RecheckState();
 
   public:
     ADSR(/* args */);

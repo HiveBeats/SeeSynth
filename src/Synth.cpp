@@ -7,15 +7,15 @@
 
 Synth::Synth(/* args */) {
     m_lfo = new Oscillator(OscillatorType::Sine, 5.f, VOLUME);
-    add_oscillator();
-    add_oscillator();
+    AddOscillator();
+    AddOscillator();
     AddEffect(new ADSR());
     AddEffect(FilterFactory::GetDefaultFilter());
     for (size_t i = 0; i < STREAM_BUFFER_SIZE; i++) {
         float sample = 0.0f;
         m_out_signal.push_back(sample);
     }
-    zero_signal();
+    ZeroSignal();
 }
 
 Synth::~Synth() {
@@ -24,37 +24,37 @@ Synth::~Synth() {
     m_out_signal.clear();
 }
 
-void Synth::zero_signal() {
+void Synth::ZeroSignal() {
     float sample = 0.0f;
     for (size_t i = 0; i < STREAM_BUFFER_SIZE; i++) {
         m_out_signal[i] = sample;
     }
 }
 
-void Synth::get_note() {
-    zero_signal();
+void Synth::GetNote() {
+    ZeroSignal();
     Adder::SumOscillators(m_oscillators, m_out_signal);
 }
 
-void Synth::apply_effects() {
-    for (Effect* effect : m_effects) {
+void Synth::ApplyEffects() {
+    for (IEffect* effect : m_effects) {
         effect->Process(m_out_signal);
     }
 }
 
-void Synth::trigger_note_on_effects() {
-    for (Effect* effect : m_effects) {
+void Synth::TriggerNoteOnEffects() {
+    for (IEffect* effect : m_effects) {
         effect->Trigger();
     }
 }
 
-void Synth::untrigger_note_on_effects() {
-    for (Effect* effect : m_effects) {
+void Synth::UntriggerNoteOnEffects() {
+    for (IEffect* effect : m_effects) {
         effect->Release();
     }
 }
 
-void Synth::add_oscillator() {
+void Synth::AddOscillator() {
     m_oscillators.push_back(
         new Oscillator(OscillatorType::Sine, 440.f, VOLUME));
 }
@@ -67,11 +67,11 @@ void Synth::Trigger(Note input) {
         osc->SetFreq(hz);
     }
     is_note_triggered = true;
-    trigger_note_on_effects();
+    TriggerNoteOnEffects();
 }
 
 // todo: fix this
-void Synth::apply_filter_lfo() {
+void Synth::ApplyFilterLfo() {
     float dt = m_lfo->Process();
     Filter* filter = (Filter*)m_effects[1];
     float freq = filter->GetFreq();
@@ -82,18 +82,18 @@ void Synth::apply_filter_lfo() {
 void Synth::Process() {
     //todo: on each sample. 
     //in order to do that, we need to move to per-sample processing
-    apply_filter_lfo();
-    get_note();
-    apply_effects();
+    ApplyFilterLfo();
+    GetNote();
+    ApplyEffects();
 }
 
 void Synth::Release() {
-    zero_signal();
+    ZeroSignal();
     is_note_triggered = false;
-    untrigger_note_on_effects();
+    UntriggerNoteOnEffects();
 }
 
-void Synth::AddEffect(Effect* fx) { m_effects.push_back(fx); }
+void Synth::AddEffect(IEffect* fx) { m_effects.push_back(fx); }
 
 void Synth::SetFilter(FilterType type) {
     Filter* old_filter = this->GetFilter();
