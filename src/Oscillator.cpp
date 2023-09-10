@@ -6,6 +6,8 @@
 #define TWO_PI 2 * SYNTH_PI
 
 Oscillator::Oscillator(OscillatorType osc, float fine, float volume) {
+    assert(fine >= -2.f && fine <= 2.f);
+    assert(volume >= 0.f && volume <= 1.f);
     SetType(osc);
     m_fine = fine;
     m_volume = volume;
@@ -42,8 +44,8 @@ void Oscillator::SetType(OscillatorType osc) {
 }
 
 void Oscillator::SetKey(float key) {
-    float freq = KeyBoard::GetHzBySemitone(key + m_fine);
-    write_log("Frequency: %.1f\n", freq);
+    m_key = key;
+    float freq = KeyBoard::GetHzBySemitone(m_key + m_fine);
     m_phase = 0;
     m_phase_dt = (this->*m_dt_function)(freq);
 }

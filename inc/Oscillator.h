@@ -32,7 +32,12 @@ class Oscillator {
     float GetKey() { return m_key; }
     void SetKey(float key);
     float GetFine() { return m_fine; }
-    void SetFine(float fine) { assert(fine >= -2.f && fine <= 2.f); m_fine = fine; }
+    void SetFine(float fine) {
+        if (fine != m_fine) {
+            assert(fine >= -2.f && fine <= 2.f);
+            m_fine = fine;
+        }
+    }
     void Reset();
     float Process();
 };

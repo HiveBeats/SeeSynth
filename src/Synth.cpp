@@ -6,7 +6,7 @@
 #include "FilterFactory.h"
 
 Synth::Synth(/* args */) {
-    m_lfo = new Oscillator(OscillatorType::Sine, 5.f, VOLUME);
+    m_lfo = new Oscillator(OscillatorType::Sine, 0.f, VOLUME);
     AddOscillator();
     AddOscillator();
     AddEffect(new ADSR());

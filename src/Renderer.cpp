@@ -89,7 +89,7 @@ float Renderer::draw_oscillators_panels(
 
         // Draw Oscillator Panel
         const int osc_panel_width = panel_bounds.width - 20;
-        const int osc_panel_height = has_shape_param ? 130 : 100;
+        const int osc_panel_height = has_shape_param ? 150 : 120;
         const int osc_panel_x = panel_bounds.x + 10;
         const int osc_panel_y = panel_bounds.y + 50 + panel_y_offset;
         panel_y_offset += osc_panel_height + 5;
@@ -112,13 +112,23 @@ float Renderer::draw_oscillators_panels(
         decibels =
             GuiSlider(el_rect, amp_slider_label, "", decibels, -60.0f, 0.0f);
         ui_osc->volume = powf(10.f, decibels * (1.f / 20.f));
-        osc->SetVolume(ui_osc->volume);
+        el_rect.y += el_rect.height + el_spacing;
 
+        // Fine slider
+        float fine = osc->GetFine();
+        char fine_slider_label[10];
+        snprintf(fine_slider_label, 9, "%.3f u", fine);
+        fine = GuiSlider(el_rect, fine_slider_label, "", fine, -2.f, 2.f);
+        ui_osc->fine = fine;
         el_rect.y += el_rect.height + el_spacing;
 
         // Defer shape drop-down box.
         ui_osc->shape_dropdown_rect = el_rect;
         el_rect.y += el_rect.height + el_spacing;
+
+        // Apply values to real
+        osc->SetVolume(ui_osc->volume);
+        osc->SetFine(ui_osc->fine);
     }
 
     return panel_y_offset;
@@ -191,7 +201,7 @@ void Renderer::draw_second_panel(Rectangle& bounds) {
 }
 
 float Renderer::DrawFilterPanel(Synth& synth, FilterGuiState& gui_filter,
-                                  const Rectangle& panel_bounds) {
+                                const Rectangle& panel_bounds) {
 #define FILTER_TYPE_OPTIONS "LP;BP;HP"
     Filter* filter = synth.GetFilter();
     float panel_y_offset = 0;
@@ -221,20 +231,20 @@ float Renderer::DrawFilterPanel(Synth& synth, FilterGuiState& gui_filter,
     gui_filter.freq = powf(10.f, freq);
     el_rect.y += el_rect.height + el_spacing;
 
-    //todo: implement that when Res will be fixed
-    // Resonance slider
-    // float res = gui_filter.res;
-    // char res_slider_label[32];
-    // snprintf(res_slider_label, 7, "%.1f u", res);
-    // res = GuiSlider(el_rect, res_slider_label, "", res, 0.0f, 1.0f);
-    // gui_filter.res = res;
-    // el_rect.y += el_rect.height + el_spacing;
+    // todo: implement that when Res will be fixed
+    //  Resonance slider
+    //  float res = gui_filter.res;
+    //  char res_slider_label[32];
+    //  snprintf(res_slider_label, 7, "%.1f u", res);
+    //  res = GuiSlider(el_rect, res_slider_label, "", res, 0.0f, 1.0f);
+    //  gui_filter.res = res;
+    //  el_rect.y += el_rect.height + el_spacing;
 
     // Shape select
     int shape_index = (int)(gui_filter.type);
     bool is_dropdown_click =
-        GuiDropdownBox(el_rect, FILTER_TYPE_OPTIONS,
-                        &shape_index, gui_filter.is_dropdown_open);
+        GuiDropdownBox(el_rect, FILTER_TYPE_OPTIONS, &shape_index,
+                       gui_filter.is_dropdown_open);
 
     if (is_dropdown_click) {
         write_log("Dropdown clicked!\n");
@@ -247,7 +257,8 @@ float Renderer::DrawFilterPanel(Synth& synth, FilterGuiState& gui_filter,
     // apply values to real one
     // todo: thrid (order) parameter
     // todo: why resonance changing does not work?
-    filter->SetParameters(gui_filter.freq, filter->GetRes(), filter->GetPeakGain());
+    filter->SetParameters(gui_filter.freq, filter->GetRes(),
+                          filter->GetPeakGain());
 
     return panel_y_offset;
 }
