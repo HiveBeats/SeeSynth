@@ -43,7 +43,7 @@ void Application::InitSynth() {
         assert(osc);
 
         OscillatorGuiState* ui =
-            new OscillatorGuiState{.freq = osc->GetFreq(),
+            new OscillatorGuiState{.fine = osc->GetFine(),
                                    .waveshape = osc->GetType(),
                                    .volume = osc->GetVolume()};
         m_synth_gui_state.oscillators.push_back(ui);
@@ -94,7 +94,7 @@ void Application::UpdateOnNoteInput() {
         if (!m_synth.GetIsNoteTriggered()) {
             m_synth.Trigger((*m_current_note));
         }
-        write_log("Note played: %s\n", m_current_note->name.c_str());
+        //write_log("Note played: %s\n", m_current_note->name.c_str());
     } else if (is_note_up() && m_synth.GetIsNoteTriggered()) {
         m_synth.Release();
     }

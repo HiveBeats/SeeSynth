@@ -12,33 +12,33 @@ ADSR::ADSR(/* args */) {
 
 ADSR::~ADSR() { delete m_ramp; }
 
-bool ADSR::is_attack_elapsed() {
+bool ADSR::IsAttackElapsed() {
     return m_state == sAttack && m_ramp->IsCompleted();
 }
 
-bool ADSR::is_decay_elapsed() {
+bool ADSR::IsDecayElapsed() {
     return m_state == sDecay && m_ramp->IsCompleted();
 }
 
-bool ADSR::is_release_elapsed() {
+bool ADSR::IsReleaseElapsed() {
     return m_state == sRelease && m_ramp->IsCompleted();
 }
 
-void ADSR::recheck_state() {
+void ADSR::RecheckState() {
     switch (m_state) {
         case sAttack:
-            if (is_attack_elapsed()) {
+            if (IsAttackElapsed()) {
                 m_state = sDecay;
                 m_ramp->RampTo(m_sustain_level, m_decay_time);
             }
             break;
         case sDecay:
-            if (is_decay_elapsed()) {
+            if (IsDecayElapsed()) {
                 m_state = sSustain;
             }
             break;
         case sRelease:
-            if (is_release_elapsed()) {
+            if (IsReleaseElapsed()) {
                 m_state = sOff;
             }
             break;
@@ -47,7 +47,7 @@ void ADSR::recheck_state() {
     }
 }
 
-void ADSR::process_sample(float* sample) {
+void ADSR::ProcessSample(float* sample) {
     if (m_state == sOff) {
         (*sample) = 0;
     } else if (m_state == sAttack) {
@@ -80,8 +80,8 @@ void ADSR::Release() {
 
 void ADSR::Process(std::vector<float>& samples) {
     for (std::size_t i = 0; i < samples.size(); i++) {
-        recheck_state();
-        process_sample(&samples[i]);
+        RecheckState();
+        ProcessSample(&samples[i]);
     }
 }
 

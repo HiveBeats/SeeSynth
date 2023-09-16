@@ -54,10 +54,9 @@ class KeyBoard {
     }
 
   public:
-    KeyBoard(/* args */);
-    ~KeyBoard();
 
-    static float GetHzBySemitone(int semitone) {
+    static float GetHzBySemitone(float semitone) {
+        //440 * Math.Pow(2, (note - 69) / 12.0) would it be better?
         return PITCH_STANDARD * powf(powf(2.f, (1.f / 12.f)), semitone);
     }
 
@@ -71,7 +70,3 @@ class KeyBoard {
         return result;
     }
 };
-
-KeyBoard::KeyBoard(/* args */) {}
-
-KeyBoard::~KeyBoard() {}

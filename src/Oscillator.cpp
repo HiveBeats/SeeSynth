@@ -1,11 +1,15 @@
 #include "Oscillator.h"
 #include "Settings.h"
+#include "KeyBoard.h"
+#include "Logger.h"
 
 #define TWO_PI 2 * SYNTH_PI
 
-Oscillator::Oscillator(OscillatorType osc, float freq, float volume) {
+Oscillator::Oscillator(OscillatorType osc, float fine, float volume) {
+    assert(fine >= -2.f && fine <= 2.f);
+    assert(volume >= 0.f && volume <= 1.f);
     SetType(osc);
-    m_freq = freq;
+    m_fine = fine;
     m_volume = volume;
 }
 
@@ -21,26 +25,27 @@ void Oscillator::SetType(OscillatorType osc) {
     m_osc = osc;
     switch (m_osc) {
         case Sine:
-            m_osc_function = &Oscillator::sineosc;
-            m_dt_function = &Oscillator::calc_sine_phase_delta;
+            m_osc_function = &Oscillator::SineOsc;
+            m_dt_function = &Oscillator::CalcSinePhaseDelta;
             break;
         case Triangle:
-            m_osc_function = &Oscillator::triangleosc;
-            m_dt_function = &Oscillator::calc_saw_phase_delta;
+            m_osc_function = &Oscillator::TriangleOsc;
+            m_dt_function = &Oscillator::CalcSawPhaseDelta;
             break;
         case Square:
-            m_osc_function = &Oscillator::squareosc;
-            m_dt_function = &Oscillator::calc_sine_phase_delta;
+            m_osc_function = &Oscillator::SquareOsc;
+            m_dt_function = &Oscillator::CalcSinePhaseDelta;
             break;
         case Saw:
-            m_osc_function = &Oscillator::sawosc;
-            m_dt_function = &Oscillator::calc_saw_phase_delta;
+            m_osc_function = &Oscillator::SawOsc;
+            m_dt_function = &Oscillator::CalcSawPhaseDelta;
             break;
     }
 }
 
-void Oscillator::SetFreq(float freq) {
-    m_freq = freq;
+void Oscillator::SetKey(float key) {
+    m_key = key;
+    float freq = KeyBoard::GetHzBySemitone(m_key + m_fine);
     m_phase = 0;
     m_phase_dt = (this->*m_dt_function)(freq);
 }
@@ -49,44 +54,44 @@ float Oscillator::Process() {
     return (this->*m_osc_function)() * m_volume;
 }
 
-void Oscillator::sine_osc_phase_incr() {
+void Oscillator::SineOscPhaseIncr() {
     m_phase += m_phase_dt;
     if (m_phase >= TWO_PI)
         m_phase -= TWO_PI;
 }
 
-void Oscillator::saw_osc_phase_incr() {
+void Oscillator::SawOscPhaseIncr() {
     m_phase += m_phase_dt;
     if (m_phase >= 1.0f)
         m_phase -= 1.0f;
 }
 
-float Oscillator::calc_saw_phase_delta(float freq) {
+float Oscillator::CalcSawPhaseDelta(float freq) {
     return freq / SAMPLE_RATE;
 }
 
-float Oscillator::calc_sine_phase_delta(float freq) {
+float Oscillator::CalcSinePhaseDelta(float freq) {
     return (TWO_PI * freq) / SAMPLE_RATE;
 }
 
-float Oscillator::sineosc() {
+float Oscillator::SineOsc() {
     float result = sinf(m_phase);
-    sine_osc_phase_incr();
+    SineOscPhaseIncr();
     return result;
 }
 
-float Oscillator::sign(float v) { return (v > 0.0) ? 1.f : -1.f; }
+float Oscillator::Sign(float v) { return (v > 0.0) ? 1.f : -1.f; }
 
-float Oscillator::squareosc() { return sign(sineosc()); }
+float Oscillator::SquareOsc() { return Sign(SineOsc()); }
 
-float Oscillator::triangleosc() {
+float Oscillator::TriangleOsc() {
     float result = 1.f - fabsf(m_phase - 0.5f) * 4.f;
-    saw_osc_phase_incr();
+    SawOscPhaseIncr();
     return result;
 }
 
-float Oscillator::sawosc() {
+float Oscillator::SawOsc() {
     float result = m_phase * 2.f - 1.f;
-    saw_osc_phase_incr();
+    SawOscPhaseIncr();
     return result;
 }

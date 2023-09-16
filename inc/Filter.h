@@ -1,5 +1,5 @@
 #pragma once
-#include "Effect.h"
+#include "IEffect.h"
 
 enum FilterType {
     LowPass,
@@ -7,7 +7,7 @@ enum FilterType {
     HighPass
 };
 
-class Filter : public Effect {
+class Filter : public IEffect {
   protected:
     float m_freq;  // cutoff frequency
     float m_q;     // filter quantity (resonance)
@@ -23,10 +23,10 @@ class Filter : public Effect {
   public:
     Filter(/* args */);
     virtual ~Filter();
-    void Trigger() override;
-    void Release() override;
+    void Trigger() override final;
+    void Release() override final;
     float Process(float in);
-    void Process(std::vector<float>& samples) override;
+    void Process(std::vector<float>& samples) override final;
     void SetParameters(float freq, float res, float q);
     float GetFreq() { return m_freq; }
     float GetRes() { return m_q; }

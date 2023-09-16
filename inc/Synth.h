@@ -3,7 +3,7 @@
 #include "ADSR.h"
 #include "Filter.h"
 #include "Adder.h"
-#include "Effect.h"
+#include "IEffect.h"
 #include "Note.h"
 #include "Oscillator.h"
 #include "Settings.h"
@@ -13,23 +13,23 @@ class Synth {
   private:
     bool is_note_triggered;
     std::vector<Oscillator*> m_oscillators;
-    std::vector<Effect*> m_effects;
+    std::vector<IEffect*> m_effects;
     std::vector<float> m_out_signal;
     Oscillator* m_lfo;
-    void zero_signal();
-    void get_note();
-    void trigger_note_on_effects();
-    void untrigger_note_on_effects();
-    void apply_effects();
-    void add_oscillator();
-    void apply_filter_lfo();
+    void ZeroSignal();
+    void GetNote();
+    void TriggerNoteOnEffects();
+    void UntriggerNoteOnEffects();
+    void ApplyEffects();
+    void AddOscillator();
+    void ApplyFilterLfo();
   public:
     Synth(/* args */);
     ~Synth();
     void Trigger(Note input);
     void Process();
     void Release();
-    void AddEffect(Effect* fx);
+    void AddEffect(IEffect* fx);
     const std::vector<float>& GetOutSignal() { return m_out_signal; }
     const std::vector<Oscillator*>& GetOscillators() { return m_oscillators; }
     const bool& GetIsNoteTriggered() { return is_note_triggered; }
