@@ -8,6 +8,7 @@
 #include "Oscillator.h"
 #include "Settings.h"
 #include <vector>
+#include "LFO.h"
 
 class Synth {
   private:
@@ -15,7 +16,7 @@ class Synth {
     std::vector<Oscillator*> m_oscillators;
     std::vector<IEffect*> m_effects;
     std::vector<float> m_out_signal;
-    Oscillator* m_lfo;
+    LFO* m_lfo;
     void ZeroSignal();
     void GetNote();
     void TriggerNoteOnEffects();

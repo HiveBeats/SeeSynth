@@ -2,8 +2,8 @@
 #include "Filter.h"
 
 class HighPassFilter : public Filter {
-  private:
-    void CalculateCoefficients() override;
+  protected:
+    float GetSampleForFilterType() override;
 
   public:
     HighPassFilter();

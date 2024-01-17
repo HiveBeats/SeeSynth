@@ -257,6 +257,10 @@ float Renderer::DrawFilterPanel(Synth& synth, FilterGuiState& gui_filter,
     // apply values to real one
     // todo: thrid (order) parameter
     // todo: why resonance changing does not work?
+    // todo: limit filter lowest frequency  to ~40 hz
+    if (gui_filter.freq < 40.0) {
+        gui_filter.freq = 50.0;
+    }
     filter->SetParameters(gui_filter.freq, filter->GetRes(),
                           filter->GetPeakGain());
 
