@@ -203,7 +203,7 @@ void Renderer::draw_second_panel(Rectangle& bounds) {
 float Renderer::DrawFilterPanel(Synth& synth, FilterGuiState& gui_filter,
                                 const Rectangle& panel_bounds) {
 #define FILTER_TYPE_OPTIONS "LP;BP;HP"
-    Filter* filter = synth.GetFilter();
+    StateVariableFilter* filter = synth.GetFilter();
     float panel_y_offset = 0;
 
     // Draw Filter Panel
@@ -257,6 +257,10 @@ float Renderer::DrawFilterPanel(Synth& synth, FilterGuiState& gui_filter,
     // apply values to real one
     // todo: thrid (order) parameter
     // todo: why resonance changing does not work?
+    // todo: limit statevariablefilter lowest frequency  to ~40 hz
+    if (gui_filter.freq < 40.0) {
+        gui_filter.freq = 50.0;
+    }
     filter->SetParameters(gui_filter.freq, filter->GetRes(),
                           filter->GetPeakGain());
 

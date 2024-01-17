@@ -1,17 +1,20 @@
 #include "Synth.h"
+#include "FilterFactory.h"
 #include "KeyBoard.h"
 #include "Logger.h"
 #include "OscillatorType.h"
 #include "Settings.h"
-#include "FilterFactory.h"
-#include "LFO.h"
+#include "LowPassStateVariableFilter.h"
 
 Synth::Synth(/* args */) {
     m_lfo = new LFO();
+    m_lfo->SetFreq(5.0);
     AddOscillator();
     AddOscillator();
     AddEffect(new ADSR());
-    AddEffect(FilterFactory::GetDefaultFilter());
+    // todo: implement state-variable filters in a factory
+    AddEffect((StateVariableFilter*)new LowPassStateVariableFilter());
+    // AddEffect(FilterFactory::GetDefaultFilter());
     for (size_t i = 0; i < STREAM_BUFFER_SIZE; i++) {
         float sample = 0.0f;
         m_out_signal.push_back(sample);
@@ -38,8 +41,15 @@ void Synth::GetNote() {
 }
 
 void Synth::ApplyEffects() {
-    for (IEffect* effect : m_effects) {
-        effect->Process(m_out_signal);
+    auto* adsr = m_effects[0];
+    adsr->Process(m_out_signal);
+
+    StateVariableFilter* filter = (StateVariableFilter*)m_effects[1];
+    // assert(filter);
+
+    for (std::size_t i = 0; i < m_out_signal.size(); i++) {
+        ApplyFilterLfo();
+        m_out_signal[i] = filter->Process(m_out_signal[i]);
     }
 }
 
@@ -56,8 +66,7 @@ void Synth::UntriggerNoteOnEffects() {
 }
 
 void Synth::AddOscillator() {
-    m_oscillators.push_back(
-        new Oscillator(OscillatorType::Sine, 0.0f, VOLUME));
+    m_oscillators.push_back(new Oscillator(OscillatorType::Sine, 0.0f, VOLUME));
 }
 
 void Synth::Trigger(Note input) {
@@ -73,15 +82,16 @@ void Synth::Trigger(Note input) {
 // todo: fix this
 void Synth::ApplyFilterLfo() {
     float dt = m_lfo->Process();
-    Filter* filter = (Filter*)m_effects[1];
+    StateVariableFilter* filter = (StateVariableFilter*)m_effects[1];
     float freq = filter->GetFreq();
-    //todo: check formula
-    //filter->SetParameters(freq + dt * 0.2f, filter->GetRes(), filter->GetPeakGain());
+    // todo: check formula
+    // write_log("LFO DT: %f\n", dt);
+    filter->SetParameters(freq + dt, filter->GetRes(), filter->GetPeakGain());
 }
 
 void Synth::Process() {
-    //todo: on each sample. 
-    //in order to do that, we need to move to per-sample processing
+    // todo: on each sample.
+    // in order to do that, we need to move to per-sample processing
     //ApplyFilterLfo();
     GetNote();
     ApplyEffects();
@@ -96,9 +106,10 @@ void Synth::Release() {
 void Synth::AddEffect(IEffect* fx) { m_effects.push_back(fx); }
 
 void Synth::SetFilter(FilterType type) {
-    Filter* old_filter = this->GetFilter();
+    StateVariableFilter* old_filter = this->GetFilter();
     if (!old_filter->IsSameFilterType(type)) {
-        Filter* new_filter = FilterFactory::CreateFilter(old_filter, type);
+        // todo: implement other types of state variable filters;
+        StateVariableFilter* new_filter = (StateVariableFilter*)new LowPassStateVariableFilter(old_filter); // FilterFactory::CreateFilter(old_filter, type);
         delete old_filter;
         m_effects[1] = new_filter;
     }
