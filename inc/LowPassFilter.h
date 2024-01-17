@@ -4,7 +4,7 @@
 
 class LowPassFilter : public Filter {
   protected:
-    void CalculateCoefficients() override;
+    float GetSampleForFilterType() override;
 
   public:
     LowPassFilter();
@@ -13,3 +13,4 @@ class LowPassFilter : public Filter {
     ~LowPassFilter();
     bool IsSameFilterType(FilterType type) override { return type == LowPass; };
 };
+

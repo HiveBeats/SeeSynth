@@ -1,7 +1,7 @@
 #pragma once
 
 #include "ADSR.h"
-#include "StateVariableFilter.h"
+#include "Filter.h"
 #include "Adder.h"
 #include "IEffect.h"
 #include "Note.h"
@@ -35,6 +35,6 @@ class Synth {
     const std::vector<Oscillator*>& GetOscillators() { return m_oscillators; }
     const bool& GetIsNoteTriggered() { return is_note_triggered; }
     ADSR* GetADSR() { return (ADSR*)m_effects[0]; }
-    StateVariableFilter* GetFilter() { return (StateVariableFilter*)m_effects[1]; }
+    Filter* GetFilter() { return (Filter*)m_effects[1]; }
     void SetFilter(FilterType type);
 };
